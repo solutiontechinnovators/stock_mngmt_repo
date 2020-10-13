@@ -149,6 +149,10 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'stockapp/static')
 ]
 AUTH_USER_MODEL = 'users.User'
+# Controlling uploaded media
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+MEDIA_URL = "/media/"
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 LOGOUT_REDIRECT_URL = 'login'
