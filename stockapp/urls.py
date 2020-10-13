@@ -25,7 +25,10 @@ from users.views import CustomLogin
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('users/', include('users.urls')),
+    # project apis
+
+    path('users/api/', include('users.api.urls')),
     path('', CustomLogin.as_view(template_name='users/login.html'), name='login'),
 
 
-] 
+]

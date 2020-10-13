@@ -28,14 +28,14 @@ SECRET_KEY = 'h=#d2%tq9-i6wu!r+ihqtc4+5=4+wee+1#8qeu5iq-cs*@r=ry'
 DEBUG = True
 
 ALLOWED_HOSTS = []
-# testing 
+# testing
 
 # Application definition
 
 INSTALLED_APPS = [
-     # General use templates & template tags (should appear first)
+    # General use templates & template tags (should appear first)
     'adminlte3',
-     # Optional: Django admin theme (must be before django.contrib.admin)
+    # Optional: Django admin theme (must be before django.contrib.admin)
     'adminlte3_theme',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -45,7 +45,18 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'users',
     'crispy_forms',
+    'rest_framework',
+    'rest_framework.authtoken',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ]
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
