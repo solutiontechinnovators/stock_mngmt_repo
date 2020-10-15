@@ -7,7 +7,6 @@ from users.api.serializers import UserRegSerializer
 
 
 @api_view(['POST', ])
-# @permission_classes((IsAuthenticated,))
 def registration_view(request):
     if request.method == 'POST':
         serializer = UserRegSerializer(data=request.data)
