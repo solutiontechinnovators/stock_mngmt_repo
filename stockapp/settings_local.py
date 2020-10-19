@@ -57,6 +57,10 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ]
 }
+# Added to return user details upon login
+# REST_AUTH_SERIALIZERS = {
+#     'TOKEN_SERIALIZER': 'project.serializers.TokenSerializer',
+# }
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
