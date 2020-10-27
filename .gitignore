@@ -1,2 +1,4 @@
-/__pycache__/
+*/__pycache__/
 /migrations/
+users/api/__pycache__/
+users/__pycache__/
