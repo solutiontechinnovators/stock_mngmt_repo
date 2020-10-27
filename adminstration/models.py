@@ -49,3 +49,5 @@ class Shop(models.Model):
 
     class Meta:
         db_table = "shop"
+
+

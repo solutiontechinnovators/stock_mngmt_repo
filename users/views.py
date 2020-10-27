@@ -44,7 +44,7 @@ class CustomLogin(auth_views.LoginView):
         messages.success(
                 self.request, 'Registration is done. Please check your email!', extra_tags='alert')
         
-        return render(self.request, 'users/login.html')
+        return render(self.request, 'common/base.html')
 
         
 

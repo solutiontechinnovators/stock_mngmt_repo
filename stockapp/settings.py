@@ -27,11 +27,8 @@ SECRET_KEY = 'h=#d2%tq9-i6wu!r+ihqtc4+5=4+wee+1#8qeu5iq-cs*@r=ry'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-<<<<<<< HEAD
 ALLOWED_HOSTS = []
-=======
-ALLOWED_HOSTS = ['stockapprealproject.herokuapp.com', 'localhost']
->>>>>>> c66830bb6753d8acda87660070f5b9aa59fc8939
+
 # testing
 
 # Application definition
@@ -52,6 +49,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'adminstration',
+    'Common',
 ]
 
 REST_FRAMEWORK = {
