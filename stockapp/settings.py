@@ -96,15 +96,13 @@ WSGI_APPLICATION = 'stockapp.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'stockapp',
-        'USER': 'root',
-        'PASSWORD': '',
-        'HOST': 'localhost',
-        'PORT': '3306',
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        },
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'd64ppfcs77t4m9',
+        'USER': 'wryjxjdylqqnry',
+        'PASSWORD': '36f769ec1e2052ec8c1cbae839ff0fcc7bcbbd4e93e7da9bfb41495b3b71e856',
+        'HOST': 'ec2-52-3-4-232.compute-1.amazonaws.com',
+        'PORT': '5432',
+
     }
 }
 
