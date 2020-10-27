@@ -2,3 +2,5 @@
 /migrations/
 users/api/__pycache__/
 users/__pycache__/
+stockapp/__pycache__/
+

@@ -1,6 +1,8 @@
 from rest_framework import serializers
-
+# from rest_framework import serializers.TokenSerializer
 from users.models import User
+# from rest_auth.serializers import TokenSerializer
+from django.contrib.auth import get_user_model
 
 
 class UserRegSerializer(serializers.ModelSerializer):
