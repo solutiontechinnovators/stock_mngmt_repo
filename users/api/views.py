@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from users.api.serializers import UserRegSerializer
 from django.core import serializers
 import json
+from adminstration.models import Position, Shop, UserPositionAssignment
 
 # testing login to return token and user details
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -36,10 +37,24 @@ class CustomObtainAuthToken(ObtainAuthToken):
         response = super(CustomObtainAuthToken, self).post(
             request, *args, **kwargs)
         token = Token.objects.get(key=response.data['token'])
-        user = serializers.serialize(
-            "json", User.objects.all(), fields=('first_name'))
-        # user = User.objects.filter(id=token.user_id)
-        print(user)
+        # user = serializers.serialize(
+        #     "json", User.objects.all(), fields=('first_name'))
+        user = User.objects.get(id=token.user_id)
+        assigned_position = UserPositionAssignment.objects.filter(
+            user_id=user.id)
+        position_code = ''
+        if assigned_position:
 
-        # return Response({'token': token.key, 'user_email': user.email, 'first_name': user.first_name, 'last_name': user.last_name})
-        return Response({'token': token.key, 'user': user})
+            position_code = assigned_position[0].position.position_code
+
+        serialized_all_users = serializers.serialize(
+            "json", User.objects.all(), fields=('first_name', 'last_name', 'email'))
+        serialized_positions = serializers.serialize(
+            "json", Position.objects.all())
+
+        if position_code == 'P003':
+            return Response({'token': token.key, 'user_email': user.email, 'first_name': user.first_name, 'last_name': user.last_name, 'all_users': serialized_all_users, 'all_positions': serialized_positions})
+        else:
+            return Response({'token': token.key, 'user_email': user.email, 'first_name': user.first_name, 'last_name': user.last_name})
+
+        # return Response({'token': token.key, 'user': user})
