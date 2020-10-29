@@ -30,7 +30,7 @@ def sign_up(request):
         return render(request, 'users/sign_up.html', {'sign_up_form': sign_up_form})
     else:
         sign_up_form = UserRegisterForm()
-    return render(request, 'users/sign_up.html', {'sign_up_form': sign_up_form})
+        return render(request, 'users/sign_up.html', {'sign_up_form': sign_up_form})
 
 
 

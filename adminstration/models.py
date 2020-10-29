@@ -50,4 +50,19 @@ class Shop(models.Model):
     class Meta:
         db_table = "shop"
 
+class UserShopAssignment(models.Model):
+    user = models.ForeignKey(
+        User, related_name='assigned_to_shop', on_delete=models.PROTECT)
+    shop = models.ForeignKey(Shop, on_delete=models.PROTECT)
+    assignment_status = models.CharField(max_length=20)
+    assigned_by = models.ForeignKey(
+        User, related_name='assigned_by_shop', on_delete=models.PROTECT)
+    timestamp = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return self.assignment_status
+
+    class Meta:
+        db_table = "user_shop_asignment"
+
 

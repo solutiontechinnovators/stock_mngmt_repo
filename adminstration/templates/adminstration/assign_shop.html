@@ -1,0 +1,65 @@
+{% extends 'Common/base.html' %}
+{% load static %}
+{% block content %}
+<!-- {% if user.is_authenticated %} -->
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-md-10">
+                <!-- /.box-header -->
+                <div class="box-body">
+                    <div class="row">
+
+                        <div class="col-sm-2"></div>
+                        <div class="col-sm-8">
+                            <div class="box box-primary box-solid">
+                                <div class="box-header with-border">
+                                    <center>Assign User Shop</center>
+                                </div>
+                                <!-- /.box-header -->
+                                <!-- form start -->
+                                <div class="row">
+                                    <div class="col-sm-2"></div>
+                                    <div class="col-sm-8">
+                                        {% load crispy_forms_tags %}
+                                        <form method="POST" enctype="multipart/form-data">
+                                            {% csrf_token %}
+                                            <fieldset class="form-group">
+                                                {{ shop_assign_form|crispy }}
+                                            </fieldset>
+                                            <!-- /.col -->
+                                            <div class="box-footer">
+                                                <center>
+                                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                                </center>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="col-sm-2"></div>
+                                    <!-- /.box -->
+                                </div>
+
+
+                            </div>
+                        </div>
+                        <div class="col-sm-2"></div>
+                    </div>
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <div class="col-sm-1"></div>
+            <!-- /.box -->
+        </div>
+
+    </section>
+    <!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+<!-- {% else %} -->
+<!-- {% include 'rcaa/404.html' %} -->
+<!-- {% endif %} -->
+{% endblock %}
