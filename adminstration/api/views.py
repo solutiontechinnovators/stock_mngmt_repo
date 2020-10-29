@@ -16,7 +16,7 @@ from users.models import User
 @permission_classes((IsAuthenticated,))
 # @authentication_classes([])
 # @permission_classes([])
-def position_registration_api(request):
+def shop_registration_api(request):
     if request.method == 'POST':
         serializer = ShopRegSerializer(data=request.data)
         data = {}
