@@ -9,6 +9,8 @@ urlpatterns = [
          name='shop_registration'),
     path('position_assignment', views.position_assignment_api,
          name='position_assignment'),
+    path('administration_api', views.administration_api,
+         name='administration_api'),
 
 
 ]

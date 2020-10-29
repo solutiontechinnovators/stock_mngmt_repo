@@ -10,6 +10,7 @@ import json
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from users.models import User
+from adminstration.models import Position, UserPositionAssignment, Shop, UserShopAssignment
 
 
 @api_view(['POST', ])
@@ -48,3 +49,20 @@ def position_assignment_api(request):
         else:
             data = serializer.errors
         return Response(data)
+
+
+@api_view(['GET', ])
+@permission_classes((IsAuthenticated,))
+def administration_api(request):
+    if request.method == 'GET':
+        shops = Shop.objects.all()
+        shop_serializer = ShopRegSerializer(shops, many=True)
+        print('hhhhhhhhhhhhhhhhhhh')
+        print(shop_serializer.data)
+        data = shop_serializer.data
+        serialized_all_users = serializers.serialize(
+            "json", User.objects.all(), fields=('first_name', 'last_name', 'email'))
+        serialized_positions = serializers.serialize(
+            "json", Position.objects.all())
+        # serialized_shops = serializers.serialize('json', Shop.objects.all())
+        return Response({'all_users': serialized_all_users, 'all_positions': serialized_positions, 'all_shops': data})
