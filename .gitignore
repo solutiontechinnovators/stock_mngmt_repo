@@ -1,5 +1,4 @@
-**/__pycache__
-/migrations/
+**/__pycache__/
+**/migrations
 
-users/api/__pycache__/
-stockapp/__pycache__/
+

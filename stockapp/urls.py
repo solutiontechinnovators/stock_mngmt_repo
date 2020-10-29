@@ -18,13 +18,10 @@ from django.contrib import admin
 from django.urls import path, include
 from users.views import CustomLogin
 
-# from users.views import CustomLogin
-# from django.conf import settings
-# from django.conf.urls.static import static
-
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('users/', include('users.urls')),
+    path('adminstration/', include('adminstration.urls')),
     # project apis
 
     path('users/api/', include('users.api.urls')),

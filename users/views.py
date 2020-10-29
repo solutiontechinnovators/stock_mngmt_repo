@@ -30,7 +30,7 @@ def sign_up(request):
         return render(request, 'users/sign_up.html', {'sign_up_form': sign_up_form})
     else:
         sign_up_form = UserRegisterForm()
-    return render(request, 'users/sign_up.html', {'sign_up_form': sign_up_form})
+        return render(request, 'users/sign_up.html', {'sign_up_form': sign_up_form})
 
 
 
@@ -44,7 +44,7 @@ class CustomLogin(auth_views.LoginView):
         messages.success(
                 self.request, 'Registration is done. Please check your email!', extra_tags='alert')
         
-        return render(self.request, 'users/login.html')
+        return render(self.request, 'Common/base.html')
 
         
 

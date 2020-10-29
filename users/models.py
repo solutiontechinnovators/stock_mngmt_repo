@@ -29,7 +29,7 @@ class MyUserManager(BaseUserManager):
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_active', True)
         extra_fields.setdefault('date_joined', True)
-        extra_fields.setdefault('position_id', None)
+        # extra_fields.setdefault('position_id', None)
         if extra_fields.get('is_staff') is not True:
             raise ValueError('Superuser must have is_staff=True.')
         if extra_fields.get('is_superuser') is not True:
@@ -42,7 +42,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(null=True, max_length=255)
     email = models.EmailField(unique=True, null=True)
     date_joined = models.DateTimeField(auto_now_add=True)
-    position_id = models.CharField(null=True, blank=True, max_length=5)
+    # position_id = models.CharField(null=True, blank=True, max_length=5)
     is_staff = models.BooleanField(
         _('staff status'),
         default=False,
