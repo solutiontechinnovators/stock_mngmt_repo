@@ -57,12 +57,18 @@ def administration_api(request):
     if request.method == 'GET':
         shops = Shop.objects.all()
         shop_serializer = ShopRegSerializer(shops, many=True)
-        print('hhhhhhhhhhhhhhhhhhh')
+
         print(shop_serializer.data)
         data = shop_serializer.data
         serialized_all_users = serializers.serialize(
             "json", User.objects.all(), fields=('first_name', 'last_name', 'email'))
         serialized_positions = serializers.serialize(
             "json", Position.objects.all())
+
+        position_assigned = serializers.serialize(
+            "json", UserPositionAssignment.objects.all())
+        user_position_appointments = UserPositionAssignment.objects.all()
+        print('hhhhhhhhhhhhhhhhhhh')
+        # print(user_position_appointments.length)
         # serialized_shops = serializers.serialize('json', Shop.objects.all())
-        return Response({'all_users': serialized_all_users, 'all_positions': serialized_positions, 'all_shops': data})
+        return Response({'all_users': serialized_all_users, 'all_positions': serialized_positions, 'all_shops': data, 'position_assignments': position_assigned})
