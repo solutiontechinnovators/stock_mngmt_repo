@@ -76,7 +76,7 @@ def administration_api(request):
         for position_asigned_json in positions_asigned_json:
 
             user_id = position_asigned_json['fields']['user']
-            position_id = position_asigned_json['fields']['user']
+            position_id = position_asigned_json['fields']['position']
             supervisor_id = position_asigned_json['fields']['supervisor']
             position_assigned_by = position_asigned_json['fields']['assigned_by']
             user_str = serializers.serialize(
