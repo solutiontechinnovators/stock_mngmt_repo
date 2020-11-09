@@ -23,7 +23,7 @@ class Position(models.Model):
 class UserPositionAssignment(models.Model):
     user = models.ForeignKey(
         User, related_name='action_by', on_delete=models.PROTECT)
-    position = models.ForeignKey(Position, on_delete=models.PROTECT)
+    position = models.ForeignKey(Position, on_delete=models.PROTECT, related_name='position_assigned')
     assignment_status = models.CharField(max_length=20)
     supervisor = models.ForeignKey(
         User, related_name='supervisor', on_delete=models.PROTECT)

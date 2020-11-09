@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from adminstration.api.serializers import ShopRegSerializer, PositionAssignmentSerializer
 from django.core import serializers
 import json
+from rest_framework.renderers import JSONRenderer
 
 # testing login to return token and user details
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -58,17 +59,48 @@ def administration_api(request):
         shops = Shop.objects.all()
         shop_serializer = ShopRegSerializer(shops, many=True)
 
-        print(shop_serializer.data)
-        data = shop_serializer.data
         serialized_all_users = serializers.serialize(
             "json", User.objects.all(), fields=('first_name', 'last_name', 'email'))
+        serialized_all_users = json.loads(serialized_all_users)
         serialized_positions = serializers.serialize(
             "json", Position.objects.all())
-
+        serialized_positions = json.loads(serialized_positions)
+        shops_obj = serializers.serialize(
+            "json", Shop.objects.all())
+        shops_obj = json.loads(shops_obj)
         position_assigned = serializers.serialize(
             "json", UserPositionAssignment.objects.all())
-        user_position_appointments = UserPositionAssignment.objects.all()
-        print('hhhhhhhhhhhhhhhhhhh')
-        # print(user_position_appointments.length)
-        # serialized_shops = serializers.serialize('json', Shop.objects.all())
-        return Response({'all_users': serialized_all_users, 'all_positions': serialized_positions, 'all_shops': data, 'position_assignments': position_assigned})
+
+        positions_asigned_json = json.loads(position_assigned)
+        i = 0
+        for position_asigned_json in positions_asigned_json:
+
+            user_id = position_asigned_json['fields']['user']
+            position_id = position_asigned_json['fields']['user']
+            supervisor_id = position_asigned_json['fields']['supervisor']
+            position_assigned_by = position_asigned_json['fields']['assigned_by']
+            user_str = serializers.serialize(
+                "json", User.objects.filter(id=user_id), fields=('first_name', 'last_name', 'email'))
+
+            user_json = json.loads(user_str)
+            # positions_asigned_json['fields']['user']
+            positions_asigned_json[i]['fields']['user'] = user_json[0]
+
+            position_str = serializers.serialize(
+                "json", Position.objects.filter(id=position_id))
+            position_json = json.loads(position_str)
+            positions_asigned_json[i]['fields']['position'] = position_json[0]
+
+            supervisor_str = serializers.serialize(
+                "json", User.objects.filter(id=supervisor_id), fields=('first_name', 'last_name', 'email'))
+            supervisor_json = json.loads(supervisor_str)
+            positions_asigned_json[i]['fields']['supervisor'] = supervisor_json[0]
+
+            position_assigned_by_str = serializers.serialize(
+                "json", User.objects.filter(id=position_assigned_by), fields=('first_name', 'last_name', 'email'))
+            position_assigned_json = json.loads(position_assigned_by_str)
+            positions_asigned_json[i]['fields']['assigned_by'] = position_assigned_json[0]
+
+            i = i+1
+
+        return Response({'all_users': serialized_all_users, 'all_positions': serialized_positions, 'all_shops': shops_obj, 'position_assignments': positions_asigned_json})
