@@ -84,22 +84,26 @@ def administration_api(request):
 
             user_json = json.loads(user_str)
             # positions_asigned_json['fields']['user']
-            positions_asigned_json[i]['fields']['user'] = user_json[0]
+            if user_json:
+                positions_asigned_json[i]['fields']['user'] = user_json[0]
 
             position_str = serializers.serialize(
                 "json", Position.objects.filter(id=position_id))
             position_json = json.loads(position_str)
-            positions_asigned_json[i]['fields']['position'] = position_json[0]
+            if position_json:
+                positions_asigned_json[i]['fields']['position'] = position_json[0]
 
             supervisor_str = serializers.serialize(
                 "json", User.objects.filter(id=supervisor_id), fields=('first_name', 'last_name', 'email'))
             supervisor_json = json.loads(supervisor_str)
-            positions_asigned_json[i]['fields']['supervisor'] = supervisor_json[0]
+            if supervisor_json:
+                positions_asigned_json[i]['fields']['supervisor'] = supervisor_json[0]
 
             position_assigned_by_str = serializers.serialize(
                 "json", User.objects.filter(id=position_assigned_by), fields=('first_name', 'last_name', 'email'))
             position_assigned_json = json.loads(position_assigned_by_str)
-            positions_asigned_json[i]['fields']['assigned_by'] = position_assigned_json[0]
+            if position_assigned_json:
+                positions_asigned_json[i]['fields']['assigned_by'] = position_assigned_json[0]
 
             i = i+1
 
