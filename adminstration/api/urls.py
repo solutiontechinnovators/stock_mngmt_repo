@@ -11,6 +11,14 @@ urlpatterns = [
          name='position_assignment'),
     path('administration_api', views.administration_api,
          name='administration_api'),
+    path('shop_update_api', views.shop_update_api,
+         name='shop_update_api'),
+    path('user_assignment_update_api', views.user_assignment_update_api,
+         name='user_assignment_update_api'),
+    path('shop_assignment', views.shop_assignment,
+         name='shop_assignment'),
+    path('shop_assignment_update', views.shop_assignment_update,
+         name='shop_assignment_update'),
 
 
 ]

@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import IsAuthenticated
-from adminstration.api.serializers import ShopRegSerializer, PositionAssignmentSerializer
+from adminstration.api.serializers import *
 from django.core import serializers
 import json
 from rest_framework.renderers import JSONRenderer
@@ -11,7 +11,7 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from users.models import User
-from adminstration.models import Position, UserPositionAssignment, Shop, UserShopAssignment
+from adminstration.models import *
 
 
 @api_view(['POST', ])
@@ -33,6 +33,80 @@ def shop_registration_api(request):
         return Response(data)
 
 
+# Shop Update
+@api_view(['POST', ])
+@permission_classes((IsAuthenticated,))
+# @authentication_classes([])
+# @permission_classes([])
+def shop_update_api(request):
+    if request.method == 'POST':
+        # First getting the object id
+        shop_id = request.data.get('id')
+        data_from_post = request.data
+        serializer = ShopRegSerializer(data=request.data)
+        data = {}
+        shop = Shop.objects.get(id=shop_id)
+        shop_serializer = ShopRegSerializer(shop, data=data_from_post)
+
+        if shop_serializer.is_valid():
+            # validatedData = serializer.validated_data
+
+            position = shop_serializer.save()
+            data['Response'] = 'Position updated successfully'
+            data['id'] = position.id
+
+        else:
+            data = serializer.errors
+        return Response(data)
+
+
+# Shop Assignment
+@api_view(['POST', ])
+@permission_classes((IsAuthenticated,))
+# @authentication_classes([])
+# @permission_classes([])
+def shop_assignment(request):
+    if request.method == 'POST':
+        serializer = ShopAssignmentSerializer(data=request.data)
+        data = {}
+
+        if serializer.is_valid():
+
+            user = request.user
+
+            shop = serializer.save(assigned_by=user)
+            data['Response'] = 'Shop Assigned successfully'
+
+        else:
+            data = serializer.errors
+        return Response(data)
+
+
+# update shop assignment
+@api_view(['POST', ])
+@permission_classes((IsAuthenticated,))
+def shop_assignment_update(request):
+    if request.method == 'POST':
+        # First getting the object id
+        obj_id = request.data.get('id')
+        data_from_post = request.data
+        # serializer = PositionAssignmentSerializer(data=request.data)
+        data = {}
+        shop_assign_obj = UserShopAssignment.objects.get(id=obj_id)
+        user_shop_update_serializer = ShopAssignmentSerializer(
+            shop_assign_obj, data=data_from_post)
+
+        if user_shop_update_serializer.is_valid():
+            # validatedData = serializer.validated_data
+
+            updated_shop_assignment = user_shop_update_serializer.save()
+            data['Response'] = 'User assignment updated successfully'
+
+        else:
+            data = user_shop_update_serializer.errors
+        return Response(data)
+
+
 @api_view(['POST', ])
 @permission_classes((IsAuthenticated,))
 def position_assignment_api(request):
@@ -49,6 +123,33 @@ def position_assignment_api(request):
             data['user_id'] = position.user.id
         else:
             data = serializer.errors
+        return Response(data)
+
+# Update User Position Assignment api
+@api_view(['POST', ])
+@permission_classes((IsAuthenticated,))
+# @authentication_classes([])
+# @permission_classes([])
+def user_assignment_update_api(request):
+    if request.method == 'POST':
+        # First getting the object id
+        obj_id = request.data.get('id')
+        data_from_post = request.data
+        # serializer = PositionAssignmentSerializer(data=request.data)
+        data = {}
+        position_assign_obj = UserPositionAssignment.objects.get(id=obj_id)
+        user_assignment_update_serializer = PositionAssignmentSerializer(
+            position_assign_obj, data=data_from_post)
+
+        if user_assignment_update_serializer.is_valid():
+            # validatedData = serializer.validated_data
+
+            updated_assignment = user_assignment_update_serializer.save()
+            data['Response'] = 'User assignment updated successfully'
+            data['id'] = updated_assignment.id
+
+        else:
+            data = user_assignment_update_serializer.errors
         return Response(data)
 
 

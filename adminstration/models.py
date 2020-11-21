@@ -54,7 +54,7 @@ class UserShopAssignment(models.Model):
     user = models.ForeignKey(
         User, related_name='assigned_to_shop', on_delete=models.PROTECT)
     shop = models.ForeignKey(Shop, on_delete=models.PROTECT)
-    assignment_status = models.CharField(max_length=20)
+    assignment_status = models.CharField(max_length=20, default='Active')
     assigned_by = models.ForeignKey(
         User, related_name='assigned_by_shop', on_delete=models.PROTECT)
     timestamp = models.DateField(auto_now_add=True)
