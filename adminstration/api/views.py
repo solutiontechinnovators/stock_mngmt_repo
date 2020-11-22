@@ -169,11 +169,15 @@ def administration_api(request):
         shops_obj = serializers.serialize(
             "json", Shop.objects.all())
         shops_obj = json.loads(shops_obj)
+
+       
         position_assigned = serializers.serialize(
             "json", UserPositionAssignment.objects.all())
 
         positions_asigned_json = json.loads(position_assigned)
         i = 0
+
+        # populating id's with corresponding objects in position assigned
         for position_asigned_json in positions_asigned_json:
 
             user_id = position_asigned_json['fields']['user']
@@ -208,4 +212,41 @@ def administration_api(request):
 
             i = i+1
 
-        return Response({'all_users': serialized_all_users, 'all_positions': serialized_positions, 'all_shops': shops_obj, 'position_assignments': positions_asigned_json})
+        # populating shops assigned ids with corresponding objects.
+         # -----------------
+        shops_assignment_obj = serializers.serialize(
+            "json", UserShopAssignment.objects.all())
+        shops_assignment_json_obj = json.loads(shops_assignment_obj)
+
+        # ------------------
+        j=0
+        for shop_assignment_json_obj in shops_assignment_json_obj:
+        
+            user_id = shop_assignment_json_obj['fields']['user']
+            shop_id = shop_assignment_json_obj['fields']['shop']
+            assigned_by_id = shop_assignment_json_obj['fields']['assigned_by']
+            
+            user_str = serializers.serialize(
+                "json", User.objects.filter(id=user_id), fields=('first_name', 'last_name', 'email'))
+
+            user_json = json.loads(user_str)
+           
+            if user_json:
+                shops_assignment_json_obj[j]['fields']['user'] = user_json[0]
+
+            shop_str = serializers.serialize(
+                "json", Shop.objects.filter(id=shop_id))
+            shop_json = json.loads(shop_str)
+            if shop_json:
+                shops_assignment_json_obj[j]['fields']['shop'] = shop_json[0]
+
+            assigned_by_str = serializers.serialize(
+                "json", User.objects.filter(id=assigned_by_id), fields=('first_name', 'last_name', 'email'))
+            assigned_by_json = json.loads(assigned_by_str)
+            if assigned_by_json:
+                shops_assignment_json_obj[j]['fields']['assigned_by'] = assigned_by_json[0]
+
+            j = j+1
+
+        return Response({'all_users': serialized_all_users, 'all_positions': serialized_positions, 'all_shops': shops_obj, 'position_assignments': positions_asigned_json,
+                         'shops_assignment_json_obj': shops_assignment_json_obj})
