@@ -7,18 +7,20 @@ class UserPositionAssignmentForm(forms.ModelForm):
     class Meta:
         model = UserPositionAssignment
         fields = (
-                  "position",
-                  "supervisor",
+                    "user",
+                    "position",
+                    "supervisor",
                   )
 
 class ShopForm(forms.ModelForm):
     
     class Meta:
-        model = UserPositionAssignment
+        model = Shop
         fields = (
-                "user",
-                "position",
-                "supervisor",
+                "shop_name",
+                "shop_no",
+                "district",
+                "sector",
                   )
 class UserShopAssignmentForm(forms.ModelForm):
 
