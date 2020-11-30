@@ -170,7 +170,6 @@ def administration_api(request):
             "json", Shop.objects.all())
         shops_obj = json.loads(shops_obj)
 
-       
         position_assigned = serializers.serialize(
             "json", UserPositionAssignment.objects.all())
 
@@ -219,18 +218,18 @@ def administration_api(request):
         shops_assignment_json_obj = json.loads(shops_assignment_obj)
 
         # ------------------
-        j=0
+        j = 0
         for shop_assignment_json_obj in shops_assignment_json_obj:
-        
+
             user_id = shop_assignment_json_obj['fields']['user']
             shop_id = shop_assignment_json_obj['fields']['shop']
             assigned_by_id = shop_assignment_json_obj['fields']['assigned_by']
-            
+
             user_str = serializers.serialize(
                 "json", User.objects.filter(id=user_id), fields=('first_name', 'last_name', 'email'))
 
             user_json = json.loads(user_str)
-           
+
             if user_json:
                 shops_assignment_json_obj[j]['fields']['user'] = user_json[0]
 
@@ -250,3 +249,19 @@ def administration_api(request):
 
         return Response({'all_users': serialized_all_users, 'all_positions': serialized_positions, 'all_shops': shops_obj, 'position_assignments': positions_asigned_json,
                          'shops_assignment_json_obj': shops_assignment_json_obj})
+
+
+# deleting records
+@api_view(['POST', ])
+@permission_classes((IsAuthenticated,))
+# @authentication_classes([])
+# @permission_classes([])
+def delete_shop(request):
+    if request.method == 'POST':
+        # First getting the object id
+        obj_id = request.data.get('id')
+        deleted_shop = Shop.objects.filter(id=obj_id).delete()
+        print(deleted_shop)
+        data = {}
+        data['Response'] = 'Shop deleted successfully'
+        return Response(data)
