@@ -7,5 +7,10 @@ urlpatterns = [
     path('assign_user_position', views.assign_user_position, name="assign_user_position"),
     path('add_shop', views.add_shop, name="add_shop"),
     path('assign_user_shop', views.assign_user_shop, name="assign_user_shop"),
+    path('view_shops', views.view_shops, name="view_shops"),
+    path('view_assigned_shops', views.view_assigned_shops, name="view_assigned_shops"),
+    path('view_assigned_positions', views.view_assigned_positions, name="view_assigned_positions"),
+
+
 
 ]

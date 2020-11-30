@@ -50,6 +50,10 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'adminstration',
     'Common',
+    'administration',
+    'stocksales',
+
+    
 ]
 
 REST_FRAMEWORK = {

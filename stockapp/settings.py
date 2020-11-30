@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'Common',
     'adminstration',
     
+    'stocksales',
 ]
 
 REST_FRAMEWORK = {
