@@ -26,6 +26,7 @@ urlpatterns = [
 
     path('users/api/', include('users.api.urls')),
     path('adminstration/api/', include('adminstration.api.urls')),
+    path('stocksales/api/', include('stocksales.api.urls')),
     path('', CustomLogin.as_view(template_name='users/login.html'), name='login'),
 
 

@@ -13,24 +13,26 @@ class PhoneType(models.Model):
         return self.type_name
 
     class Meta:
-        db_table = "phone_type" 
+        db_table = "phone_type"
+
 
 class Brand(models.Model):
 
     brand_name = models.CharField(max_length=100)
     timestamp = models.DateField(auto_now_add=True)
-    phone = models.ForeignKey(PhoneType, on_delete=models.PROTECT)
+    phone_type = models.ForeignKey(PhoneType, on_delete=models.PROTECT)
 
     def __str__(self):
         return self.brand_name
 
     class Meta:
-        db_table = "brand" 
+        db_table = "brand"
+
 
 class PhoneModel(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.PROTECT)
-    phone = models.ForeignKey(PhoneType, on_delete=models.PROTECT)
+    phone_type = models.ForeignKey(PhoneType, on_delete=models.PROTECT)
     brand = models.ForeignKey(Brand, on_delete=models.PROTECT)
     model_name = models.CharField(max_length=60)
     processor = models.CharField(max_length=60)
@@ -50,6 +52,7 @@ class PhoneModel(models.Model):
     class Meta:
         db_table = "phone_model"
 
+
 class Color(models.Model):
 
     color_name = models.CharField(max_length=100)
@@ -59,7 +62,8 @@ class Color(models.Model):
         return self.color_name
 
     class Meta:
-        db_table = "color" 
+        db_table = "color"
+
 
 class Storage(models.Model):
 
@@ -70,21 +74,21 @@ class Storage(models.Model):
         return self.storage_size
 
     class Meta:
-        db_table = "storage" 
+        db_table = "storage"
+
 
 class ProductStockIn(models.Model):
 
-    user = models.ForeignKey(User , on_delete=models.PROTECT)
-    phone = models.ForeignKey(PhoneType, on_delete=models.PROTECT)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
+    phone_type = models.ForeignKey(PhoneType, on_delete=models.PROTECT)
     brand = models.ForeignKey(Brand, on_delete=models.PROTECT)
     phone_model = models.ForeignKey(PhoneModel, on_delete=models.PROTECT)
     color = models.ForeignKey(Color, on_delete=models.PROTECT)
     storage = models.ForeignKey(Storage, on_delete=models.PROTECT)
-    buying_price = models.CharField(max_length=60)
-    selling_price = models.CharField(max_length=60)
+    buying_price = models.FloatField(max_length=60)
+    selling_price = models.FloatField(max_length=60)
     timestamp_in = models.DateField(auto_now_add=True)
-    timestamp_out = models.DateField(auto_now_add=True)
-
+    timestamp_out = models.DateField(blank=True, null=True)
 
     def __str__(self):
         return self.timestamp_in
@@ -93,24 +97,28 @@ class ProductStockIn(models.Model):
         db_table = "product_stock_in"
 
 
-
 class StockToShop(models.Model):
 
-    product_stock_in = models.ForeignKey(ProductStockIn, on_delete=models.PROTECT)
-    shop = models.ForeignKey(Shop, on_delete=models.PROTECT)
+    product = models.ForeignKey(
+        ProductStockIn, on_delete=models.PROTECT)
+    shop_to = models.ForeignKey(Shop, on_delete=models.PROTECT)
     timestamp = models.DateField(auto_now_add=True)
 
     def __str__(self):
-        return self.shop
+        return self.shop_to
 
     class Meta:
-        db_table = "stock_to_shop" 
+        db_table = "stock_to_shop"
+
 
 class ShopToShop(models.Model):
 
-    product_stock_in = models.ForeignKey(ProductStockIn, on_delete=models.PROTECT)
-    shop_from = models.ForeignKey(Shop,  related_name='shop_from',  on_delete=models.PROTECT)
-    shop_to = models.ForeignKey(Shop, related_name='shop_to',  on_delete=models.PROTECT)
+    product_stock_in = models.ForeignKey(
+        ProductStockIn, on_delete=models.PROTECT)
+    shop_from = models.ForeignKey(
+        Shop,  related_name='shop_from',  on_delete=models.PROTECT)
+    shop_to = models.ForeignKey(
+        Shop, related_name='shop_to',  on_delete=models.PROTECT)
 
     timestamp = models.DateField(auto_now_add=True)
 
@@ -118,11 +126,13 @@ class ShopToShop(models.Model):
         return self.shop_from
 
     class Meta:
-        db_table = "shop_to_shop" 
+        db_table = "shop_to_shop"
+
 
 class ShopProduct(models.Model):
 
-    product_stock_in = models.ForeignKey(ProductStockIn, on_delete=models.PROTECT)
+    product_stock_in = models.ForeignKey(
+        ProductStockIn, on_delete=models.PROTECT)
     shop_available = models.ForeignKey(Shop,  on_delete=models.PROTECT)
     status = models.CharField(max_length=20)
     timestamp = models.DateField(auto_now_add=True)
@@ -131,11 +141,13 @@ class ShopProduct(models.Model):
         return self.shop_available
 
     class Meta:
-        db_table = "shop_product" 
+        db_table = "shop_product"
+
 
 class Sales(models.Model):
 
-    product_stock_in = models.ForeignKey(ProductStockIn, on_delete=models.PROTECT)
+    product_stock_in = models.ForeignKey(
+        ProductStockIn, on_delete=models.PROTECT)
     shop = models.ForeignKey(Shop,  on_delete=models.PROTECT)
     discount = models.CharField(max_length=20)
     markup = models.CharField(max_length=20)
@@ -146,4 +158,4 @@ class Sales(models.Model):
         return self.actual_selling_price
 
     class Meta:
-        db_table = "sales" 
+        db_table = "sales"
