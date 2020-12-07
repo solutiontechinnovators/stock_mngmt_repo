@@ -237,3 +237,69 @@ def sales_product(request):
         else:
             data = serializer.errors
         return Response(data)
+
+
+# Stock admin
+@api_view(['GET', ])
+@permission_classes((IsAuthenticated,))
+# @authentication_classes([])
+# @permission_classes([])
+def stock_admin(request):
+    if request.method == 'GET':
+
+        data = {}
+
+        phone_type_objs = PhoneType.objects.all()
+        brand_objs = Brand.objects.all()
+        phone_model_objs = PhoneModel.objects.all()
+        color_objs = Color.objects.all()
+        storage_objs = Storage.objects.all()
+
+        # data['Response'] = 'Position registered successfully'
+        phone_type_s = serializers.serialize(
+            "json", phone_type_objs)
+        brand_s = serializers.serialize(
+            "json", brand_objs)
+        phone_model_s = serializers.serialize(
+            "json", phone_model_objs)
+        phone_model_str = json.loads(phone_model_s)
+        if phone_model_str:
+            j = 0
+            for phone_model_ss in phone_model_str:
+
+                user_id = phone_model_ss['fields']['user']
+                phone_type_id = phone_model_ss['fields']['phone_type']
+                brand_id = phone_model_ss['fields']['brand']
+
+                user_str = serializers.serialize(
+                    "json", User.objects.filter(id=user_id), fields=('first_name', 'last_name', 'email'))
+
+                user_json = json.loads(user_str)
+                print('======')
+                print(user_json[0])
+                if user_json:
+                    phone_model_str[j]['fields']['user'] = user_json[0]
+
+                phone_type_str = serializers.serialize(
+                    "json", PhoneType.objects.filter(id=phone_type_id))
+                phone_type_json = json.loads(phone_type_str)
+                if phone_type_json:
+                    phone_model_str[j]['fields']['phone_type'] = phone_type_json[0]
+
+                brand_str = serializers.serialize(
+                    "json", Brand.objects.filter(id=brand_id))
+                brand_json = json.loads(brand_str)
+                if brand_json:
+                    phone_model_str[j]['fields']['brand'] = brand_json[0]
+
+                j = j+1
+        color_s = serializers.serialize(
+            "json", color_objs)
+        storage_s = serializers.serialize(
+            "json", storage_objs)
+        data['phone_type_objects'] = phone_type_s
+        data['brand_objects'] = brand_s
+        data['phone_model_objects'] = phone_model_str
+        data['color_objects'] = color_s
+        data['storage_objects'] = storage_s
+        return Response(data)
