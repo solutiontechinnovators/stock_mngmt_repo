@@ -27,4 +27,10 @@ urlpatterns = [
          name='sales_product'),
     path('stock_admin', views.stock_admin,
          name='stock_admin'),
+    path('viewing_stock_in_product', views.viewing_stock_in_product,
+         name='viewing_stock_in_product'),
+    path('get_sales_details', views.get_sales_details,
+         name='get_sales_details'),
+    path('get_stock_to_shop_dtls', views.get_stock_to_shop_dtls,
+         name='get_stock_to_shop_dtls'),
 ]
