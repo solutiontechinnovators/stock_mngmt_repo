@@ -357,7 +357,7 @@ def viewing_stock_in_product(request):
                     "json", PhoneModel.objects.filter(id=phone_model_id))
                 phone_model_json = json.loads(phone_model_str)
                 if phone_model_json:
-                    product_str[j]['fields']['phone_model'] = brand_json[0]
+                    product_str[j]['fields']['phone_model'] = phone_model_json[0]
 
                 color_str = serializers.serialize(
                     "json", Color.objects.filter(id=color_id))
@@ -405,7 +405,7 @@ def get_sales_details(request):
                     "json", ProductStockIn.objects.filter(id=product_stock_in_id))
 
                 stk_in_json = json.loads(stk_in_str)
-                
+
                 if stk_in_json:
                     sales_str[j]['fields']['product_stock_in'] = stk_in_json[0]
 
@@ -431,7 +431,7 @@ def get_stock_to_shop_dtls(request):
         data = {}
 
         stock_to_shop_objs = StockToShop.objects.all()
-        
+
         stock_to_shop_s = serializers.serialize(
             "json", stock_to_shop_objs)
 
@@ -447,7 +447,7 @@ def get_stock_to_shop_dtls(request):
                     "json", ProductStockIn.objects.filter(id=product_id))
 
                 stk_to_shop_json = json.loads(stk_to_shop_str)
-                
+
                 if stk_to_shop_json:
                     stock_to_shop_str[j]['fields']['product'] = stk_to_shop_json[0]
 
