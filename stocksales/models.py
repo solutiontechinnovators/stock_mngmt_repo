@@ -92,7 +92,7 @@ class ProductStockIn(models.Model):
     timestamp_out = models.DateField(blank=True, null=True)
 
     def __str__(self):
-        return self.timestamp_in
+        return self.phone_model.model_name
 
     class Meta:
         db_table = "product_stock_in"

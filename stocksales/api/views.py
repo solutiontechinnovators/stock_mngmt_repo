@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from stocksales.api.serializers import *
 from django.core import serializers
 import json
+from django.db.models import Count
 from rest_framework.renderers import JSONRenderer
 
 # testing login to return token and user details
@@ -459,5 +460,74 @@ def get_stock_to_shop_dtls(request):
                 j = j+1
 
         data['stock_to_shop_details'] = stock_to_shop_str
+
+        return Response(data)
+
+
+# stock in by phone type details
+@api_view(['GET', ])
+@permission_classes((IsAuthenticated,))
+# @authentication_classes([])
+# @permission_classes([])viewing stock-in product
+def get_stock_in_by_phone_type(request):
+    if request.method == 'GET':
+
+        data = {}
+        products_type_count = []
+        products_brand_count = []
+        phone_typ = PhoneType.objects.annotate(no_prod=Count('productstockin'))
+        
+        for product in phone_typ:
+            obj = {}
+            obj['name'] = product.type_name
+            obj['count'] = product.no_prod
+            products_type_count.append(obj)
+        
+        brand_typ = Brand.objects.annotate(no_prod=Count('productstockin')).filter(
+            phone_type__type_name='Smart Phones')
+
+        for brand_ty in brand_typ:
+           
+            obj1 = {}
+            obj1['brand'] = brand_ty.brand_name
+            obj1['count'] = brand_ty.no_prod
+            obj1['phone type'] = brand_ty.phone_type.type_name
+            products_brand_count.append(obj1)
+        phone_typ_s = serializers.serialize(
+            "json", phone_typ)
+
+        phone_typ_str = json.loads(phone_typ_s)
+
+        data['product count by type'] = products_type_count
+        data['product count by Brand'] = products_brand_count
+
+        return Response(data)
+
+
+# stock in by Brand details
+@api_view(['GET', ])
+@permission_classes((IsAuthenticated,))
+# @authentication_classes([])
+# @permission_classes([])viewing stock-in product
+def get_stock_in_by_brand(request):
+    if request.method == 'GET':
+
+        data = {}
+        products_count = []
+        brand_typ = Brand.objects.annotate(no_prod=Count('productstockin')).filter(
+            phone_type__type_name='Smart Phones')
+        
+        for product in phone_typ:
+            obj = {}
+            obj['name'] = product.type_name
+            obj['count'] = product.no_prod
+            products_count.append(obj)
+        
+        phone_typ_s = serializers.serialize(
+            "json", phone_typ)
+
+        phone_typ_str = json.loads(phone_typ_s)
+
+        data['product count'] = products_count
 
         return Response(data)
