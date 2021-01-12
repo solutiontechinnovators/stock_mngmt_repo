@@ -140,7 +140,8 @@ def product_stock_in(request):
         data = {}
 
         if serializer.is_valid():
-            serializer.save()
+            user = request.user
+            serializer.save(user=user)
             product_stock_in_obj = ProductStockIn.objects.all()
             # data['Response'] = 'Position registered successfully'
             product_stock_in_s = serializers.serialize(
@@ -474,32 +475,47 @@ def get_stock_in_by_phone_type(request):
 
         data = {}
         products_type_count = []
-        products_brand_count = []
+        smartphone_brand_count = []
+        feature_phone_brand_count = []
         phone_typ = PhoneType.objects.annotate(no_prod=Count('productstockin'))
-        
+
         for product in phone_typ:
             obj = {}
             obj['name'] = product.type_name
             obj['count'] = product.no_prod
             products_type_count.append(obj)
-        
+
+        # smart phones count by Brand
         brand_typ = Brand.objects.annotate(no_prod=Count('productstockin')).filter(
             phone_type__type_name='Smart Phones')
-
+        
         for brand_ty in brand_typ:
-           
+
             obj1 = {}
             obj1['brand'] = brand_ty.brand_name
             obj1['count'] = brand_ty.no_prod
-            obj1['phone type'] = brand_ty.phone_type.type_name
-            products_brand_count.append(obj1)
-        phone_typ_s = serializers.serialize(
-            "json", phone_typ)
 
-        phone_typ_str = json.loads(phone_typ_s)
+            smartphone_brand_count.append(obj1)
+
+        # Feature phones count by Brand
+        featurephn_brand_typ = Brand.objects.annotate(no_prod=Count('productstockin')).filter(
+            phone_type__type_name='Feature Phones')
+        
+        for brand_fp in featurephn_brand_typ:
+
+            obj1 = {}
+            obj1['brand'] = brand_fp.brand_name
+            obj1['count'] = brand_fp.no_prod
+
+            feature_phone_brand_count.append(obj1)
+        # phone_typ_s = serializers.serialize(
+        #     "json", phone_typ)
+
+        # phone_typ_str = json.loads(phone_typ_s)
 
         data['product count by type'] = products_type_count
-        data['product count by Brand'] = products_brand_count
+        data['smartphone count by Brand'] = smartphone_brand_count
+        data['featurephone count by Brand'] = feature_phone_brand_count
 
         return Response(data)
 
@@ -516,13 +532,13 @@ def get_stock_in_by_brand(request):
         products_count = []
         brand_typ = Brand.objects.annotate(no_prod=Count('productstockin')).filter(
             phone_type__type_name='Smart Phones')
-        
+
         for product in phone_typ:
             obj = {}
             obj['name'] = product.type_name
             obj['count'] = product.no_prod
             products_count.append(obj)
-        
+
         phone_typ_s = serializers.serialize(
             "json", phone_typ)
 

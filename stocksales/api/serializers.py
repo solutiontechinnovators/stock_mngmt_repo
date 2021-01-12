@@ -46,7 +46,7 @@ class ProductStockInSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductStockIn
-        fields = ['user', 'phone_type', 'brand', 'phone_model', 'color',
+        fields = ['imei_no', 'phone_type', 'brand', 'phone_model', 'color',
                   'storage', 'buying_price', 'selling_price', 'timestamp_in']
 
 
