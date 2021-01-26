@@ -488,10 +488,11 @@ def get_stock_in_by_phone_type(request):
         # smart phones count by Brand
         brand_typ = Brand.objects.annotate(no_prod=Count('productstockin')).filter(
             phone_type__type_name='Smart Phones')
-        
+
         for brand_ty in brand_typ:
 
             obj1 = {}
+            obj1['id'] = brand_ty.id
             obj1['brand'] = brand_ty.brand_name
             obj1['count'] = brand_ty.no_prod
 
@@ -500,10 +501,11 @@ def get_stock_in_by_phone_type(request):
         # Feature phones count by Brand
         featurephn_brand_typ = Brand.objects.annotate(no_prod=Count('productstockin')).filter(
             phone_type__type_name='Feature Phones')
-        
+
         for brand_fp in featurephn_brand_typ:
 
             obj1 = {}
+            obj1['id'] = brand_fp.id
             obj1['brand'] = brand_fp.brand_name
             obj1['count'] = brand_fp.no_prod
 
@@ -525,25 +527,92 @@ def get_stock_in_by_phone_type(request):
 @permission_classes((IsAuthenticated,))
 # @authentication_classes([])
 # @permission_classes([])viewing stock-in product
-def get_stock_in_by_brand(request):
+def get_stock_in_by_model(request):
     if request.method == 'GET':
-
+        id = request.query_params['id']
         data = {}
         products_count = []
-        brand_typ = Brand.objects.annotate(no_prod=Count('productstockin')).filter(
-            phone_type__type_name='Smart Phones')
+        model_typ = PhoneModel.objects.annotate(
+            no_prod=Count('productstockin')).filter(brand__id=id)
 
-        for product in phone_typ:
+        for product in model_typ:
             obj = {}
-            obj['name'] = product.type_name
+            obj['id'] = product.id
+            obj['name'] = product.model_name
             obj['count'] = product.no_prod
             products_count.append(obj)
 
-        phone_typ_s = serializers.serialize(
-            "json", phone_typ)
+        data['model count'] = products_count
 
-        phone_typ_str = json.loads(phone_typ_s)
+        return Response(data)
 
-        data['product count'] = products_count
+
+# stock in by Brand details
+@api_view(['GET', ])
+@permission_classes((IsAuthenticated,))
+# @authentication_classes([])
+# @permission_classes([])viewing stock-in product
+def get_product_details(request):
+    if request.method == 'GET':
+        id = request.query_params['id']
+        data = {}
+        product_stck_in = ProductStockIn.objects.filter(phone_model_id=id)
+
+        product_in_s = serializers.serialize(
+            "json", product_stck_in)
+
+        product_str = json.loads(product_in_s)
+        if product_str:
+            j = 0
+            for product_ in product_str:
+
+                user_id = product_['fields']['user']
+                phone_type_id = product_['fields']['phone_type']
+                brand_id = product_['fields']['brand']
+                phone_model_id = product_['fields']['phone_model']
+                color_id = product_['fields']['color']
+                storage_id = product_['fields']['storage']
+
+                user_str = serializers.serialize(
+                    "json", User.objects.filter(id=user_id), fields=('first_name', 'last_name', 'email'))
+
+                user_json = json.loads(user_str)
+
+                if user_json:
+                    product_str[j]['fields']['user'] = user_json[0]
+
+                phone_type_str = serializers.serialize(
+                    "json", PhoneType.objects.filter(id=phone_type_id))
+                phone_type_json = json.loads(phone_type_str)
+                if phone_type_json:
+                    product_str[j]['fields']['phone_type'] = phone_type_json[0]
+
+                brand_str = serializers.serialize(
+                    "json", Brand.objects.filter(id=brand_id))
+                brand_json = json.loads(brand_str)
+                if brand_json:
+                    product_str[j]['fields']['brand'] = brand_json[0]
+
+                phone_model_str = serializers.serialize(
+                    "json", PhoneModel.objects.filter(id=phone_model_id))
+                phone_model_json = json.loads(phone_model_str)
+                if phone_model_json:
+                    product_str[j]['fields']['phone_model'] = phone_model_json[0]
+
+                color_str = serializers.serialize(
+                    "json", Color.objects.filter(id=color_id))
+                color_json = json.loads(color_str)
+                if color_json:
+                    product_str[j]['fields']['color'] = color_json[0]
+
+                storage_str = serializers.serialize(
+                    "json", Storage.objects.filter(id=storage_id))
+                storage_json = json.loads(storage_str)
+                if storage_json:
+                    product_str[j]['fields']['storage'] = storage_json[0]
+
+                j = j+1
+
+        data['product_stock_in_details'] = product_str
 
         return Response(data)

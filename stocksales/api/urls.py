@@ -35,4 +35,8 @@ urlpatterns = [
          name='get_stock_to_shop_dtls'),
     path('get_stock_in_by_phone_type', views.get_stock_in_by_phone_type,
          name='get_stock_in_by_phone_type'),
+    path('get_stock_in_by_model', views.get_stock_in_by_model,
+         name='get_stock_in_by_model'),
+    path('get_product_details', views.get_product_details,
+         name='get_product_details'),
 ]
