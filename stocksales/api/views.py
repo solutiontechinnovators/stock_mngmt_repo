@@ -157,50 +157,6 @@ def product_stock_in(request):
 @permission_classes((IsAuthenticated,))
 # @authentication_classes([])
 # @permission_classes([])
-def stock_to_shop(request):
-    if request.method == 'POST':
-        serializer = StockToShopSerializer(data=request.data)
-        data = {}
-
-        if serializer.is_valid():
-            serializer.save()
-            stock_to_shop_obj = StockToShop.objects.all()
-            # data['Response'] = 'Position registered successfully'
-            stock_to_shop_s = serializers.serialize(
-                "json", stock_to_shop_obj)
-            data['stock_to_shop_objects'] = stock_to_shop_s
-
-        else:
-            data = serializer.errors
-        return Response(data)
-
-
-@api_view(['POST', ])
-@permission_classes((IsAuthenticated,))
-# @authentication_classes([])
-# @permission_classes([])
-def shop_to_shop(request):
-    if request.method == 'POST':
-        serializer = ShopToShopSerializer(data=request.data)
-        data = {}
-
-        if serializer.is_valid():
-            serializer.save()
-            shop_to_shop_obj = ShopToShop.objects.all()
-            # data['Response'] = 'Position registered successfully'
-            shop_to_shop_s = serializers.serialize(
-                "json", shop_to_shop_obj)
-            data['shop_to_shop_objects'] = shop_to_shop_s
-
-        else:
-            data = serializer.errors
-        return Response(data)
-
-
-@api_view(['POST', ])
-@permission_classes((IsAuthenticated,))
-# @authentication_classes([])
-# @permission_classes([])
 def shop_product(request):
     if request.method == 'POST':
         serializer = ShopProductSerializer(data=request.data)
@@ -615,4 +571,102 @@ def get_product_details(request):
 
         data['product_stock_in_details'] = product_str
 
+        return Response(data)
+
+
+# stock movement to shop
+@api_view(['POST', ])
+@permission_classes((IsAuthenticated,))
+# @authentication_classes([])
+# @permission_classes([])viewing stock-in product
+def move_stock_to_shop(request):
+    if request.method == 'POST':
+        product_list = []
+
+        product_list = request.data['product_list']
+        loc_from = request.data['location_from_id']
+        loca_to = request.data['location_to_id']
+        moved_by = request.data['moved_by']
+        error_emei = []
+        for imei in product_list:
+
+            product = ProductStockIn.objects.filter(
+                imei_no=imei).update(stock_status='out')
+
+            p_id = ProductStockIn.objects.filter(
+                imei_no=imei)
+
+            if p_id.exists():
+
+                move_p = ShopToShop(product_stock_in=p_id[0], shop_from_id=loc_from,
+                                    shop_to_id=loca_to, moved_by_id=moved_by)
+                move_p.save()
+                product_in = ShopProduct(
+                    product_stock_in=p_id[0], shop_available_id=loca_to)
+                product_in.save()
+            else:
+                error_emei.append(imei)
+
+        data = {}
+        if error_emei:
+            data['product not in stock'] = error_emei
+        else:
+            data['message'] = 'products moved'
+
+        return Response(data)
+
+
+# Shop Product by phone type details
+@api_view(['GET', ])
+@permission_classes((IsAuthenticated,))
+# @authentication_classes([])
+# @permission_classes([])viewing stock-in product
+def get_shop_product_by_phone_type(request):
+    if request.method == 'GET':
+
+        data = {}
+        products_type_count = []
+        smartphone_brand_count = []
+        usr = request.user
+        positn = UserPositionAssignment.objects.filter(
+            user=usr, assignment_status='active')
+        shp_assn = UserShopAssignment.objects.filter(
+            user=usr, assignment_status='active')
+        if positn[0].position.position_code == 'P005':
+            # phones count by phone type
+            products_by_phone_typ = ShopProduct.objects.values('shop_available__shop_name', 'product_stock_in__phone_type__type_name', 'product_stock_in__phone_type__id').annotate(
+                no_prod=Count('product_stock_in')).filter(shop_available=shp_assn[0].shop)
+            # phones count by Brand
+            prds_by_brand_typ = ShopProduct.objects.values('shop_available__shop_name', 'product_stock_in__brand__brand_name',
+                                                           'product_stock_in__brand__id', 'product_stock_in__brand__phone_type__type_name').annotate(
+                                                               no_prod=Count('product_stock_in')).filter(shop_available=shp_assn[0].shop)
+        else:
+
+            # phones count by phone type
+            products_by_phone_typ = ShopProduct.objects.values('shop_available__shop_name', 'product_stock_in__phone_type__type_name', 'product_stock_in__phone_type__id').annotate(
+                no_prod=Count('product_stock_in'))
+            # phones count by Brand
+            prds_by_brand_typ = ShopProduct.objects.values('shop_available__shop_name', 'product_stock_in__brand__brand_name',
+                                                           'product_stock_in__brand__id', 'product_stock_in__brand__phone_type__type_name').annotate(no_prod=Count('product_stock_in'))
+
+        for product in products_by_phone_typ:
+            obj = {}
+            obj['type name'] = product['product_stock_in__phone_type__type_name']
+            obj['count'] = product['no_prod']
+            obj['shop'] = product['shop_available__shop_name']
+            products_type_count.append(obj)
+
+        for brand_ty in prds_by_brand_typ:
+
+            obj1 = {}
+            obj1['id'] = brand_ty['product_stock_in__brand__id']
+            obj1['brand'] = brand_ty['product_stock_in__brand__brand_name']
+            obj1['type'] = brand_ty['product_stock_in__brand__phone_type__type_name']
+            obj1['count'] = brand_ty['no_prod']
+            obj1['shop'] = product['shop_available__shop_name']
+
+            smartphone_brand_count.append(obj1)
+
+        data['product count by type'] = products_type_count
+        data['smartphone count by Brand'] = smartphone_brand_count
         return Response(data)

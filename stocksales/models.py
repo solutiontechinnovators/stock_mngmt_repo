@@ -88,6 +88,7 @@ class ProductStockIn(models.Model):
     storage = models.ForeignKey(Storage, on_delete=models.PROTECT)
     buying_price = models.FloatField(max_length=60)
     selling_price = models.FloatField(max_length=60)
+    stock_status = models.CharField(max_length=5, default='in')
     timestamp_in = models.DateField(auto_now_add=True)
     timestamp_out = models.DateField(blank=True, null=True)
 
@@ -104,6 +105,7 @@ class StockToShop(models.Model):
         ProductStockIn, on_delete=models.PROTECT)
     shop_to = models.ForeignKey(Shop, on_delete=models.PROTECT)
     timestamp = models.DateField(auto_now_add=True)
+    moved_by = models.ForeignKey(User, on_delete=models.PROTECT)
 
     def __str__(self):
         return self.shop_to
@@ -111,7 +113,7 @@ class StockToShop(models.Model):
     class Meta:
         db_table = "stock_to_shop"
 
-
+#taking care of the product movement
 class ShopToShop(models.Model):
 
     product_stock_in = models.ForeignKey(
@@ -120,7 +122,7 @@ class ShopToShop(models.Model):
         Shop,  related_name='shop_from',  on_delete=models.PROTECT)
     shop_to = models.ForeignKey(
         Shop, related_name='shop_to',  on_delete=models.PROTECT)
-
+    moved_by = models.ForeignKey(User, on_delete=models.PROTECT)
     timestamp = models.DateField(auto_now_add=True)
 
     def __str__(self):
@@ -129,13 +131,14 @@ class ShopToShop(models.Model):
     class Meta:
         db_table = "shop_to_shop"
 
-
+#statuses are moved, in , solid
 class ShopProduct(models.Model):
 
     product_stock_in = models.ForeignKey(
         ProductStockIn, on_delete=models.PROTECT)
     shop_available = models.ForeignKey(Shop,  on_delete=models.PROTECT)
-    status = models.CharField(max_length=20)
+    status = models.CharField(max_length=20, default='moved')
+    returned = models.BooleanField(default=False)
     timestamp = models.DateField(auto_now_add=True)
 
     def __str__(self):
