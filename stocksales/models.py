@@ -89,6 +89,7 @@ class ProductStockIn(models.Model):
     buying_price = models.FloatField(max_length=60)
     selling_price = models.FloatField(max_length=60)
     stock_status = models.CharField(max_length=5, default='in')
+    stock_loc = models.ForeignKey(Shop, on_delete=models.PROTECT)
     timestamp_in = models.DateField(auto_now_add=True)
     timestamp_out = models.DateField(blank=True, null=True)
 
@@ -113,7 +114,9 @@ class StockToShop(models.Model):
     class Meta:
         db_table = "stock_to_shop"
 
-#taking care of the product movement
+# taking care of the product movement
+
+
 class ShopToShop(models.Model):
 
     product_stock_in = models.ForeignKey(
@@ -131,7 +134,9 @@ class ShopToShop(models.Model):
     class Meta:
         db_table = "shop_to_shop"
 
-#statuses are moved, in , solid
+# statuses are moved, in , solid
+
+
 class ShopProduct(models.Model):
 
     product_stock_in = models.ForeignKey(

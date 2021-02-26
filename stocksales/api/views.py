@@ -141,7 +141,8 @@ def product_stock_in(request):
 
         if serializer.is_valid():
             user = request.user
-            serializer.save(user=user)
+            location = Shop.objects.filter(shop_no=1)
+            serializer.save(user=user, stock_loc=location[0])
             product_stock_in_obj = ProductStockIn.objects.all()
             # data['Response'] = 'Position registered successfully'
             product_stock_in_s = serializers.serialize(
@@ -233,8 +234,7 @@ def stock_admin(request):
                     "json", User.objects.filter(id=user_id), fields=('first_name', 'last_name', 'email'))
 
                 user_json = json.loads(user_str)
-                print('======')
-                print(user_json[0])
+
                 if user_json:
                     phone_model_str[j]['fields']['user'] = user_json[0]
 
