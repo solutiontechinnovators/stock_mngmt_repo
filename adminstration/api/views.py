@@ -265,3 +265,19 @@ def delete_shop(request):
         data = {}
         data['Response'] = 'Shop deleted successfully'
         return Response(data)
+
+# retrieving all shop details
+@api_view(['GET', ])
+@permission_classes((IsAuthenticated,))
+# @authentication_classes([])
+# @permission_classes([])
+def shop_details(request):
+    if request.method == 'GET':
+        # First getting the object id
+        shop_details = Shop.objects.all()
+        shp_details = serializers.serialize(
+            "json", shop_details)
+        data = {}
+        data['shop_details'] = shp_details
+        
+        return Response(data)

@@ -21,6 +21,6 @@ urlpatterns = [
          name='shop_assignment_update'),
     path('delete_shop', views.delete_shop,
          name='delete_shop'),
-
-
+    path('shop_details', views.shop_details,
+         name='shop_details'),
 ]
