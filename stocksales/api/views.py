@@ -621,7 +621,7 @@ def move_stock_to_shop(request):
 @permission_classes((IsAuthenticated,))
 # @authentication_classes([])
 # @permission_classes([])viewing stock-in product
-def get_shop_product_by_phone_type(request):
+def get_shop_product(request):
     if request.method == 'GET':
 
         data = {}

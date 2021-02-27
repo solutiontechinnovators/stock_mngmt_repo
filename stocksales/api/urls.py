@@ -37,6 +37,6 @@ urlpatterns = [
          name='get_product_details'),
     path('move_stock_to_shop', views.move_stock_to_shop,
          name='move_stock_to_shop'),
-    path('get_shop_product_by_phone_type', views.get_shop_product_by_phone_type,
-         name='get_shop_product_by_phone_type'),
+    path('get_shop_product', views.get_shop_product,
+         name='get_shop_product'),
 ]
