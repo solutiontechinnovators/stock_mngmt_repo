@@ -632,7 +632,7 @@ def get_shop_product(request):
             user=usr, assignment_status='active')
         shp_assn = UserShopAssignment.objects.filter(
             user=usr, assignment_status='active')
-        if positn[0].position.position_code == 'P005':
+        if positn[0].position.position_code == 'P006':
             # phones count by phone type
             products_by_phone_typ = ShopProduct.objects.values('shop_available__shop_name', 'product_stock_in__phone_type__type_name', 'product_stock_in__phone_type__id').annotate(
                 no_prod=Count('product_stock_in')).filter(shop_available=shp_assn[0].shop)
@@ -668,5 +668,5 @@ def get_shop_product(request):
             smartphone_brand_count.append(obj1)
 
         data['product count by type'] = products_type_count
-        data['smartphone count by Brand'] = smartphone_brand_count
+        data['product count by Brand'] = smartphone_brand_count
         return Response(data)
