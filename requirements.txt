@@ -7,13 +7,13 @@ dj-database-url==0.5.0
 Django==3.1.2
 django-adminlte3==0.1.6
 django-crispy-forms==1.9.2
-django-heroku==0.3.1
+# django-heroku==0.3.1
 djangorestframework==3.12.1
 filelock==3.0.12
 gunicorn==20.0.4
 idna==2.10
 mysqlclient==1.4.2
-psycopg2==2.8.6
+# psycopg2==2.8.6
 pytz==2020.1
 six==1.15.0
 sqlparse==0.3.1
