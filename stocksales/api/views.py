@@ -630,7 +630,7 @@ def get_shop_product(request):
         smartphone_brand_count = []
         usr = request.user
         positn = UserPositionAssignment.objects.filter(
-            user_id=usr.id, assignment_status='active')
+            user=usr, assignment_status='active')
         shp_assn = UserShopAssignment.objects.filter(
             user=usr, assignment_status='active')
 
@@ -639,41 +639,44 @@ def get_shop_product(request):
         print(positn)
         print(shp_assn)
         print('=======================')
-        if positn[0].position.position_code == 'P006':
-            # phones count by phone type
-            products_by_phone_typ = ShopProduct.objects.values('shop_available__shop_name', 'product_stock_in__phone_type__type_name', 'product_stock_in__phone_type__id').annotate(
-                no_prod=Count('product_stock_in')).filter(shop_available=shp_assn[0].shop)
-            # phones count by Brand
-            prds_by_brand_typ = ShopProduct.objects.values('shop_available__shop_name', 'product_stock_in__brand__brand_name',
-                                                           'product_stock_in__brand__id', 'product_stock_in__brand__phone_type__type_name').annotate(
-                                                               no_prod=Count('product_stock_in')).filter(shop_available=shp_assn[0].shop)
+        if positn:
+            if positn[0].position.position_code == 'P006':
+                # phones count by phone type
+                products_by_phone_typ = ShopProduct.objects.values('shop_available__shop_name', 'product_stock_in__phone_type__type_name', 'product_stock_in__phone_type__id').annotate(
+                    no_prod=Count('product_stock_in')).filter(shop_available=shp_assn[0].shop)
+                # phones count by Brand
+                prds_by_brand_typ = ShopProduct.objects.values('shop_available__shop_name', 'product_stock_in__brand__brand_name',
+                                                               'product_stock_in__brand__id', 'product_stock_in__brand__phone_type__type_name').annotate(
+                    no_prod=Count('product_stock_in')).filter(shop_available=shp_assn[0].shop)
+            else:
+
+                # phones count by phone type
+                products_by_phone_typ = ShopProduct.objects.values('shop_available__shop_name', 'product_stock_in__phone_type__type_name', 'product_stock_in__phone_type__id').annotate(
+                    no_prod=Count('product_stock_in'))
+                # phones count by Brand
+                prds_by_brand_typ = ShopProduct.objects.values('shop_available__shop_name', 'product_stock_in__brand__brand_name',
+                                                               'product_stock_in__brand__id', 'product_stock_in__brand__phone_type__type_name').annotate(no_prod=Count('product_stock_in'))
+
+            for product in products_by_phone_typ:
+                obj = {}
+                obj['type name'] = product['product_stock_in__phone_type__type_name']
+                obj['count'] = product['no_prod']
+                obj['shop'] = product['shop_available__shop_name']
+                products_type_count.append(obj)
+
+            for brand_ty in prds_by_brand_typ:
+
+                obj1 = {}
+                obj1['id'] = brand_ty['product_stock_in__brand__id']
+                obj1['brand'] = brand_ty['product_stock_in__brand__brand_name']
+                obj1['type'] = brand_ty['product_stock_in__brand__phone_type__type_name']
+                obj1['count'] = brand_ty['no_prod']
+                obj1['shop'] = product['shop_available__shop_name']
+
+                smartphone_brand_count.append(obj1)
+
+            data['product count by type'] = products_type_count
+            data['product count by Brand'] = smartphone_brand_count
         else:
-
-            # phones count by phone type
-            products_by_phone_typ = ShopProduct.objects.values('shop_available__shop_name', 'product_stock_in__phone_type__type_name', 'product_stock_in__phone_type__id').annotate(
-                no_prod=Count('product_stock_in'))
-            # phones count by Brand
-            prds_by_brand_typ = ShopProduct.objects.values('shop_available__shop_name', 'product_stock_in__brand__brand_name',
-                                                           'product_stock_in__brand__id', 'product_stock_in__brand__phone_type__type_name').annotate(no_prod=Count('product_stock_in'))
-
-        for product in products_by_phone_typ:
-            obj = {}
-            obj['type name'] = product['product_stock_in__phone_type__type_name']
-            obj['count'] = product['no_prod']
-            obj['shop'] = product['shop_available__shop_name']
-            products_type_count.append(obj)
-
-        for brand_ty in prds_by_brand_typ:
-
-            obj1 = {}
-            obj1['id'] = brand_ty['product_stock_in__brand__id']
-            obj1['brand'] = brand_ty['product_stock_in__brand__brand_name']
-            obj1['type'] = brand_ty['product_stock_in__brand__phone_type__type_name']
-            obj1['count'] = brand_ty['no_prod']
-            obj1['shop'] = product['shop_available__shop_name']
-
-            smartphone_brand_count.append(obj1)
-
-        data['product count by type'] = products_type_count
-        data['product count by Brand'] = smartphone_brand_count
+            data['info'] = 'User not assigned any position'
         return Response(data)
