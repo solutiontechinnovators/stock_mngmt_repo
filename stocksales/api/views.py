@@ -443,7 +443,7 @@ def get_stock_in_by_phone_type(request):
 
         # smart phones count by Brand
         brand_typ = Brand.objects.annotate(no_prod=Count('productstockin')).filter(
-            phone_type__type_name='Smart Phones')
+            phone_type__type_name='Smart Phone')
 
         for brand_ty in brand_typ:
 
@@ -598,7 +598,7 @@ def move_stock_to_shop(request):
 
             if p_id.exists():
 
-                #stock movement
+                # stock movement
                 move_p = ShopToShop(product_stock_in=p_id[0], shop_from_id=loc_from,
                                     shop_to_id=loca_to, moved_by_id=moved_by)
                 move_p.save()
