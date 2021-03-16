@@ -635,6 +635,7 @@ def get_shop_product(request):
             user=usr, assignment_status='active')
 
         print('hhhhhhheyyeeeeeeeeeeeeey')
+        print(usr.id)
         print(positn)
         print(shp_assn)
         print('=======================')
