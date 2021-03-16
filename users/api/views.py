@@ -42,38 +42,27 @@ class CustomObtainAuthToken(ObtainAuthToken):
         user = User.objects.get(id=token.user_id)
         assigned_position = UserPositionAssignment.objects.filter(
             user_id=user.id, assignment_status='Active')
+
         
-        print('==========')
-        print(user.id)
         shop_assigned = UserShopAssignment.objects.filter(
             user_id=user.id, assignment_status='Active')
-
-        print('+++++++++++++++')
-        print()
-        print(shop_assigned)
 
         # if assigned_position:
         position_code = ''
         position_name = ''
-        
+        shop_id = ''
+        shop_location = ''
+
         if assigned_position:
             position_code = assigned_position[0].position.position_code
             position_name = assigned_position[0].position.position_name
 
         if shop_assigned:
             shop = shop_assigned[0].shop
-            print('hhhhh')
-            print(shop)
-            # shop_location = shop.shop_name
-            print('shop_id', shop.id)
-            print('ship_name', shop.shop_name)
-            serialized_shop = serializers.serialize(
-                "json", Shop.objects.filter(id=shop.id))
-            print(serialized_shop)
-        
-        # if position_code == 'P003':
-        #     return Response({'token': token.key, 'user_email': user.email, 'first_name': user.first_name, 'last_name': user.last_name, 'all_users': serialized_all_users, 'all_positions': serialized_positions})
-        # else:
-        return Response({'token': token.key, 'user_email': user.email, 'first_name': user.first_name, 'last_name': user.last_name, 'position_name': position_name, 'position_code': position_code, 'shop': serialized_shop})
+            shop_id = shop.id
+            shop_location = shop.sector
+
+
+        return Response({'token': token.key, 'user_email': user.email, 'first_name': user.first_name, 'last_name': user.last_name, 'position_name': position_name, 'position_code': position_code, 'shop_id': shop_id, 'shop_location': shop_location})
 
         # return Response({'token': token.key, 'user': user})
