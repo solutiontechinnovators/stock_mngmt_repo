@@ -633,6 +633,11 @@ def get_shop_product(request):
             user=usr, assignment_status='active')
         shp_assn = UserShopAssignment.objects.filter(
             user=usr, assignment_status='active')
+
+        print('hhhhhhheyyeeeeeeeeeeeeey')
+        print(positn)
+        print(shp_assn)
+        print('=======================')
         if positn[0].position.position_code == 'P006':
             # phones count by phone type
             products_by_phone_typ = ShopProduct.objects.values('shop_available__shop_name', 'product_stock_in__phone_type__type_name', 'product_stock_in__phone_type__id').annotate(
