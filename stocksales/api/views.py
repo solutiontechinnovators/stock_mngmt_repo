@@ -634,7 +634,7 @@ def get_shop_product(request):
         shp_assn = UserShopAssignment.objects.filter(
             user=usr, assignment_status='active')
 
-        print('hhhhhhheyyeeeeeeeeeeeeey')
+        print('neeeeeeew coddddddddeeeee')
         print(usr.id)
         print(positn)
         print(shp_assn)
