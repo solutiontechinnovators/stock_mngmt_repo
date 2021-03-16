@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from users.api.serializers import UserRegSerializer
 from django.core import serializers
 import json
-from adminstration.models import Position, Shop, UserPositionAssignment
+from adminstration.models import Position, Shop, UserPositionAssignment, UserShopAssignment
 
 # testing login to return token and user details
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -42,14 +42,22 @@ class CustomObtainAuthToken(ObtainAuthToken):
         user = User.objects.get(id=token.user_id)
         assigned_position = UserPositionAssignment.objects.filter(
             user_id=user.id, assignment_status='Active')
+        shop_assigned = UserShopAssignment.objects.filter(
+            user_id=user.id, assignment_status='Active')
 
         # if assigned_position:
         position_code = ''
         position_name = ''
+        shop_location = ''
+        shop = ''
         if assigned_position:
             position_code = assigned_position[0].position.position_code
             position_name = assigned_position[0].position.position_name
 
+        if shop_assigned:
+            shop = shop_assigned[0].shop
+            print('hhhhh')
+            print(shop)
         # serialized_all_users = serializers.serialize(
         #     "json", User.objects.all(), fields=('first_name', 'last_name', 'email'))
         # serialized_positions = serializers.serialize(
@@ -58,6 +66,6 @@ class CustomObtainAuthToken(ObtainAuthToken):
         # if position_code == 'P003':
         #     return Response({'token': token.key, 'user_email': user.email, 'first_name': user.first_name, 'last_name': user.last_name, 'all_users': serialized_all_users, 'all_positions': serialized_positions})
         # else:
-        return Response({'token': token.key, 'user_email': user.email, 'first_name': user.first_name, 'last_name': user.last_name, 'position_name': position_name, 'position_code': position_code})
+        return Response({'token': token.key, 'user_email': user.email, 'first_name': user.first_name, 'last_name': user.last_name, 'position_name': position_name, 'position_code': position_code, 'shop':shop})
 
         # return Response({'token': token.key, 'user': user})
