@@ -630,15 +630,10 @@ def get_shop_product(request):
         smartphone_brand_count = []
         usr = request.user
         positn = UserPositionAssignment.objects.filter(
-            user=usr, assignment_status='active')
+            user=usr, assignment_status='Active')
         shp_assn = UserShopAssignment.objects.filter(
             user=usr, assignment_status='active')
 
-        print('neeeeeeew coddddddddeeeee')
-        print(usr.id)
-        print(positn)
-        print(shp_assn)
-        print('=======================')
         if positn:
             if positn[0].position.position_code == 'P006':
                 # phones count by phone type
