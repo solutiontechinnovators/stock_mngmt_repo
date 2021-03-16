@@ -632,7 +632,7 @@ def get_shop_product(request):
         positn = UserPositionAssignment.objects.filter(
             user=usr, assignment_status='Active')
         shp_assn = UserShopAssignment.objects.filter(
-            user=usr, assignment_status='active')
+            user=usr, assignment_status='Active')
 
         if positn:
             if positn[0].position.position_code == 'P006':

@@ -45,6 +45,9 @@ class CustomObtainAuthToken(ObtainAuthToken):
         shop_assigned = UserShopAssignment.objects.filter(
             user_id=user.id, assignment_status='Active')
 
+        print('+++++++++++++++')
+        print(shop_assigned)
+
         # if assigned_position:
         position_code = ''
         position_name = ''
@@ -66,6 +69,6 @@ class CustomObtainAuthToken(ObtainAuthToken):
         # if position_code == 'P003':
         #     return Response({'token': token.key, 'user_email': user.email, 'first_name': user.first_name, 'last_name': user.last_name, 'all_users': serialized_all_users, 'all_positions': serialized_positions})
         # else:
-        return Response({'token': token.key, 'user_email': user.email, 'first_name': user.first_name, 'last_name': user.last_name, 'position_name': position_name, 'position_code': position_code, 'shop':shop})
+        return Response({'token': token.key, 'user_email': user.email, 'first_name': user.first_name, 'last_name': user.last_name, 'position_name': position_name, 'position_code': position_code, 'shop': shop})
 
         # return Response({'token': token.key, 'user': user})
