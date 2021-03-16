@@ -630,7 +630,7 @@ def get_shop_product(request):
         smartphone_brand_count = []
         usr = request.user
         positn = UserPositionAssignment.objects.filter(
-            user=usr, assignment_status='active')
+            user_id=usr.id, assignment_status='active')
         shp_assn = UserShopAssignment.objects.filter(
             user=usr, assignment_status='active')
 
