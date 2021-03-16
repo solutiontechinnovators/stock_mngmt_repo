@@ -63,12 +63,12 @@ class CustomObtainAuthToken(ObtainAuthToken):
             print(shop)
         # serialized_all_users = serializers.serialize(
         #     "json", User.objects.all(), fields=('first_name', 'last_name', 'email'))
-        # serialized_positions = serializers.serialize(
-        #     "json", Position.objects.all())
+        serialized_shop = serializers.serialize(
+            "json", shop)
 
         # if position_code == 'P003':
         #     return Response({'token': token.key, 'user_email': user.email, 'first_name': user.first_name, 'last_name': user.last_name, 'all_users': serialized_all_users, 'all_positions': serialized_positions})
         # else:
-        return Response({'token': token.key, 'user_email': user.email, 'first_name': user.first_name, 'last_name': user.last_name, 'position_name': position_name, 'position_code': position_code, 'shop': shop})
+        return Response({'token': token.key, 'user_email': user.email, 'first_name': user.first_name, 'last_name': user.last_name, 'position_name': position_name, 'position_code': position_code, 'shop': serialized_shop})
 
         # return Response({'token': token.key, 'user': user})
