@@ -142,8 +142,7 @@ class ShopProduct(models.Model):
     product_stock_in = models.ForeignKey(
         ProductStockIn, on_delete=models.PROTECT)
     shop_available = models.ForeignKey(Shop,  on_delete=models.PROTECT)
-    status = models.CharField(max_length=20, default='moved')
-    returned = models.BooleanField(default=False)
+    status = models.CharField(max_length=20, default='MVIN')
     timestamp = models.DateField(auto_now_add=True)
 
     def __str__(self):
@@ -152,15 +151,22 @@ class ShopProduct(models.Model):
     class Meta:
         db_table = "shop_product"
 
+#to track the status on a certain product in the shop. (MVIN(moved in), MVOUT(moved out), SLD(solid))
+class ShopProductStatus(models.Model):
+    product_stock_in = models.ForeignKey(
+        ProductStockIn, on_delete=models.PROTECT)
+    shop_status = models.CharField(max_length=10, default='MVIN')
+    shop_reference = models.ForeignKey(Shop, on_delete=models.PROTECT)
+    timestamp = models.DateField(auto_now_add=True)
 
 class Sales(models.Model):
 
     product_stock_in = models.ForeignKey(
         ProductStockIn, on_delete=models.PROTECT)
     shop = models.ForeignKey(Shop,  on_delete=models.PROTECT)
-    discount = models.CharField(max_length=20)
-    markup = models.CharField(max_length=20)
-    actual_selling_price = models.CharField(max_length=20)
+    discount = models.IntegerField(max_length=20, default=0)
+    markup = models.IntegerField(max_length=20, default=0)
+    actual_selling_price = models.FloatField(max_length=20)
     timestamp = models.DateField(auto_now_add=True)
 
     def __str__(self):

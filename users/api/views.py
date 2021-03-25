@@ -43,14 +43,13 @@ class CustomObtainAuthToken(ObtainAuthToken):
         assigned_position = UserPositionAssignment.objects.filter(
             user_id=user.id, assignment_status='Active')
 
-        
         shop_assigned = UserShopAssignment.objects.filter(
             user_id=user.id, assignment_status='Active')
 
         # if assigned_position:
         position_code = ''
         position_name = ''
-        shop_id = ''
+        shop_id = 0
         shop_location = ''
 
         if assigned_position:
@@ -61,7 +60,6 @@ class CustomObtainAuthToken(ObtainAuthToken):
             shop = shop_assigned[0].shop
             shop_id = shop.id
             shop_location = shop.sector
-
 
         return Response({'token': token.key, 'user_email': user.email, 'first_name': user.first_name, 'last_name': user.last_name, 'position_name': position_name, 'position_code': position_code, 'shop_id': shop_id, 'shop_location': shop_location})
 

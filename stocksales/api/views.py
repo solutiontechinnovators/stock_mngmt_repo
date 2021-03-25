@@ -13,6 +13,7 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from users.models import User
 from stocksales.models import *
+from datetime import datetime
 
 
 @api_view(['POST', ])
@@ -187,11 +188,11 @@ def sales_product(request):
 
         if serializer.is_valid():
             serializer.save()
-            sales_obj = Sales.objects.all()
+            # sales_obj = Sales.objects.all()
             # data['Response'] = 'Position registered successfully'
-            sales_s = serializers.serialize(
-                "json", sales_obj)
-            data['shop_product_objects'] = sales_s
+            # sales_s = serializers.serialize(
+            #     "json", sales_obj)
+            data['product solid'] = 'product solid successfully'
 
         else:
             data = serializer.errors
@@ -424,8 +425,6 @@ def get_stock_to_shop_dtls(request):
 # stock in by phone type details
 @api_view(['GET', ])
 @permission_classes((IsAuthenticated,))
-# @authentication_classes([])
-# @permission_classes([])viewing stock-in product
 def get_stock_in_by_phone_type(request):
     if request.method == 'GET':
 
@@ -591,10 +590,10 @@ def move_stock_to_shop(request):
         for imei in product_list:
 
             product = ProductStockIn.objects.filter(
-                imei_no=imei).update(stock_status='out')
+                imei_no=imei, stock_status='in').update(stock_status='out', timestamp_out=datetime.now())
 
             p_id = ProductStockIn.objects.filter(
-                imei_no=imei)
+                imei_no=imei, stock_status='in')
 
             if p_id.exists():
 
@@ -602,9 +601,16 @@ def move_stock_to_shop(request):
                 move_p = ShopToShop(product_stock_in=p_id[0], shop_from_id=loc_from,
                                     shop_to_id=loca_to, moved_by_id=moved_by)
                 move_p.save()
+
+                # save in shop product
                 product_in = ShopProduct(
                     product_stock_in=p_id[0], shop_available_id=loca_to)
                 product_in.save()
+
+                # save in product status table
+                product_status = ShopProductStatus(
+                    product_stock_in=p_id[0], shop_reference_id=loca_to)
+                product_status.save()
             else:
                 error_emei.append(imei)
 
@@ -617,7 +623,7 @@ def move_stock_to_shop(request):
         return Response(data)
 
 
-# Shop Product by phone type details
+# Shop Products details
 @api_view(['GET', ])
 @permission_classes((IsAuthenticated,))
 # @authentication_classes([])
@@ -674,4 +680,127 @@ def get_shop_product(request):
             data['product count by Brand'] = smartphone_brand_count
         else:
             data['info'] = 'User not assigned any position'
+        return Response(data)
+
+
+# get stock from shop product table details by imei number
+@api_view(['POST', ])
+@permission_classes((IsAuthenticated,))
+def get_shop_product_by_imei(request):
+    if request.method == 'POST':
+        imei = request.data['imei_no']
+        shop_id = request.data['shop_id']
+        data = {}
+
+        shop_product = ShopProduct.objects.filter(
+            product_stock_in__imei_no=imei, shop_available_id=shop_id, status='IN')
+        shop_p_s = ''
+        if shop_product:
+            prod = ProductStockIn.objects.filter(imei_no=imei)
+            shop_p_s = serializers.serialize(
+                "json", prod)
+            product_str = json.loads(shop_p_s)
+            if product_str:
+                j = 0
+                for product_ in product_str:
+
+                    user_id = product_['fields']['user']
+                    phone_type_id = product_['fields']['phone_type']
+                    brand_id = product_['fields']['brand']
+                    phone_model_id = product_['fields']['phone_model']
+                    color_id = product_['fields']['color']
+                    storage_id = product_['fields']['storage']
+
+                    user_str = serializers.serialize(
+                        "json", User.objects.filter(id=user_id), fields=('first_name', 'last_name', 'email'))
+
+                    user_json = json.loads(user_str)
+
+                    if user_json:
+                        product_str[j]['fields']['user'] = user_json[0]
+
+                    phone_type_str = serializers.serialize(
+                        "json", PhoneType.objects.filter(id=phone_type_id))
+                    phone_type_json = json.loads(phone_type_str)
+                    if phone_type_json:
+                        product_str[j]['fields']['phone_type'] = phone_type_json[0]
+
+                    brand_str = serializers.serialize(
+                        "json", Brand.objects.filter(id=brand_id))
+                    brand_json = json.loads(brand_str)
+                    if brand_json:
+                        product_str[j]['fields']['brand'] = brand_json[0]
+
+                    phone_model_str = serializers.serialize(
+                        "json", PhoneModel.objects.filter(id=phone_model_id))
+                    phone_model_json = json.loads(phone_model_str)
+                    if phone_model_json:
+                        product_str[j]['fields']['phone_model'] = phone_model_json[0]
+
+                    color_str = serializers.serialize(
+                        "json", Color.objects.filter(id=color_id))
+                    color_json = json.loads(color_str)
+                    if color_json:
+                        product_str[j]['fields']['color'] = color_json[0]
+
+                    storage_str = serializers.serialize(
+                        "json", Storage.objects.filter(id=storage_id))
+                    storage_json = json.loads(storage_str)
+                    if storage_json:
+                        product_str[j]['fields']['storage'] = storage_json[0]
+
+                    j = j+1
+                print(shop_p_s)
+        data['object'] = product_str
+
+        return Response(data)
+
+
+# receiving shop products
+@api_view(['POST', ])
+@permission_classes((IsAuthenticated,))
+def recieve_product_by_imei(request):
+    if request.method == 'POST':
+        imei = request.data['imei_no']
+        shop_id = request.data['shop_id']
+        data = {}
+
+        shop_product = ShopProduct.objects.filter(
+            product_stock_in__imei_no=imei, shop_available_id=shop_id, status='MVIN')
+        if shop_product:
+            ShopProduct.objects.filter(
+                product_stock_in__imei_no=imei, shop_available_id=shop_id, status='MVIN').update(status='IN')
+            data['response'] = 'product received'
+        else:
+            data['response'] = 'product not sent to this stock'
+
+        return Response(data)
+
+# receiving shop products
+@api_view(['POST', ])
+@permission_classes((IsAuthenticated,))
+def sale_product(request):
+    if request.method == 'POST':
+        imei = request.data['imei_no']
+        shop_id = request.data['shop_id']
+        discount = request.data['discount']
+        markup = request.data['markup']
+        actual_selling_price = request.data['actual_selling_price']
+        data = {}
+
+        shop_product = ShopProduct.objects.filter(
+            product_stock_in__imei_no=imei, shop_available_id=shop_id)
+        if shop_product:
+            for shop_p in shop_product:
+                if shop_p.status == 'IN':
+                    sales = Sales(product_stock_in_id=shop_p.product_stock_in.id, shop_available_id=shop_id, discount=discount,markup=markup, actual_selling_price=actual_selling_price)
+                    sales.save()
+                    data['response'] = 'product solid'
+                elif shop_p.status == 'SLD':
+                    data['response'] = 'product already solid'
+                else:
+                    data['response'] = 'not in stock'
+        else:
+            data['response'] = 'product not in stock'
+
         return Response(data)
