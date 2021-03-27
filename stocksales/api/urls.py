@@ -39,9 +39,16 @@ urlpatterns = [
          name='move_stock_to_shop'),
     path('get_shop_product', views.get_shop_product,
          name='get_shop_product'),
+    path('get_shop_product_by_brand', views.get_shop_product_by_brand,
+         name='get_shop_product_by_brand'),
+    path('get_shop_product_by_model', views.get_shop_product_by_model,
+         name='get_shop_product_by_model'),
     path('get_shop_product_by_imei', views.get_shop_product_by_imei,
          name='get_shop_product_by_imei'),
+    path('recieve_product_by_imei', views.recieve_product_by_imei,
+         name='recieve_product_by_imei'),
     path('sale_product', views.sale_product,
          name='sale_product'),
 
 ]
+

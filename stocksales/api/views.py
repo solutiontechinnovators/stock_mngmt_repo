@@ -295,8 +295,7 @@ def viewing_stock_in_product(request):
                     "json", User.objects.filter(id=user_id), fields=('first_name', 'last_name', 'email'))
 
                 user_json = json.loads(user_str)
-                print('======')
-                print(user_json[0])
+
                 if user_json:
                     product_str[j]['fields']['user'] = user_json[0]
 
@@ -422,7 +421,7 @@ def get_stock_to_shop_dtls(request):
         return Response(data)
 
 
-# stock in by phone type details
+# stock in by phone type details mainly used to aggression
 @api_view(['GET', ])
 @permission_classes((IsAuthenticated,))
 def get_stock_in_by_phone_type(request):
@@ -589,9 +588,6 @@ def move_stock_to_shop(request):
         error_emei = []
         for imei in product_list:
 
-            product = ProductStockIn.objects.filter(
-                imei_no=imei, stock_status='in').update(stock_status='out', timestamp_out=datetime.now())
-
             p_id = ProductStockIn.objects.filter(
                 imei_no=imei, stock_status='in')
 
@@ -611,6 +607,9 @@ def move_stock_to_shop(request):
                 product_status = ShopProductStatus(
                     product_stock_in=p_id[0], shop_reference_id=loca_to)
                 product_status.save()
+
+                product = ProductStockIn.objects.filter(
+                    imei_no=imei, stock_status='in').update(stock_status='out', timestamp_out=datetime.now())
             else:
                 error_emei.append(imei)
 
@@ -793,7 +792,8 @@ def sale_product(request):
         if shop_product:
             for shop_p in shop_product:
                 if shop_p.status == 'IN':
-                    sales = Sales(product_stock_in_id=shop_p.product_stock_in.id, shop_available_id=shop_id, discount=discount,markup=markup, actual_selling_price=actual_selling_price)
+                    sales = Sales(product_stock_in_id=shop_p.product_stock_in.id, shop_available_id=shop_id,
+                                  discount=discount, markup=markup, actual_selling_price=actual_selling_price)
                     sales.save()
                     data['response'] = 'product solid'
                 elif shop_p.status == 'SLD':
@@ -802,5 +802,102 @@ def sale_product(request):
                     data['response'] = 'not in stock'
         else:
             data['response'] = 'product not in stock'
+
+        return Response(data)
+
+
+# product in by Brand details
+@api_view(['POST'])
+@permission_classes((IsAuthenticated,))
+# @authentication_classes([])
+# @permission_classes([])viewing stock-in product
+def get_shop_product_by_brand(request):
+    if request.method == 'POST':
+        id = request.data['brand_id']
+        shop_id = request.data['shop_id']
+        data = {}
+        products_count = []
+        model_typ = ShopProduct.objects.values('product_stock_in__phone_model__model_name', 'product_stock_in__phone_model__id').annotate(
+            no_count=Count('product_stock_in__phone_model')).filter(product_stock_in__brand_id=id, shop_available_id=shop_id)
+        
+        for product in model_typ:
+            obj = {}
+            obj['model_id'] = product['product_stock_in__phone_model__id']
+            obj['name'] = product['product_stock_in__phone_model__model_name']
+            obj['count'] = product['no_count']
+            products_count.append(obj)
+
+        data['model count'] = products_count
+
+        return Response(data)
+
+
+# shop product details for the certain model
+@api_view(['GET', ])
+@permission_classes((IsAuthenticated,))
+# @authentication_classes([])
+# @permission_classes([])viewing stock-in product
+def get_shop_product_by_model(request):
+    if request.method == 'GET':
+        id = request.query_params['id']
+        data = {}
+        product_stck_in = ProductStockIn.objects.filter(phone_model_id=id)
+
+        product_in_s = serializers.serialize(
+            "json", product_stck_in)
+
+        product_str = json.loads(product_in_s)
+        if product_str:
+            j = 0
+            for product_ in product_str:
+
+                user_id = product_['fields']['user']
+                phone_type_id = product_['fields']['phone_type']
+                brand_id = product_['fields']['brand']
+                phone_model_id = product_['fields']['phone_model']
+                color_id = product_['fields']['color']
+                storage_id = product_['fields']['storage']
+
+                user_str = serializers.serialize(
+                    "json", User.objects.filter(id=user_id), fields=('first_name', 'last_name', 'email'))
+
+                user_json = json.loads(user_str)
+
+                if user_json:
+                    product_str[j]['fields']['user'] = user_json[0]
+
+                phone_type_str = serializers.serialize(
+                    "json", PhoneType.objects.filter(id=phone_type_id))
+                phone_type_json = json.loads(phone_type_str)
+                if phone_type_json:
+                    product_str[j]['fields']['phone_type'] = phone_type_json[0]
+
+                brand_str = serializers.serialize(
+                    "json", Brand.objects.filter(id=brand_id))
+                brand_json = json.loads(brand_str)
+                if brand_json:
+                    product_str[j]['fields']['brand'] = brand_json[0]
+
+                phone_model_str = serializers.serialize(
+                    "json", PhoneModel.objects.filter(id=phone_model_id))
+                phone_model_json = json.loads(phone_model_str)
+                if phone_model_json:
+                    product_str[j]['fields']['phone_model'] = phone_model_json[0]
+
+                color_str = serializers.serialize(
+                    "json", Color.objects.filter(id=color_id))
+                color_json = json.loads(color_str)
+                if color_json:
+                    product_str[j]['fields']['color'] = color_json[0]
+
+                storage_str = serializers.serialize(
+                    "json", Storage.objects.filter(id=storage_id))
+                storage_json = json.loads(storage_str)
+                if storage_json:
+                    product_str[j]['fields']['storage'] = storage_json[0]
+
+                j = j+1
+
+        data['product_stock_in_details'] = product_str
 
         return Response(data)

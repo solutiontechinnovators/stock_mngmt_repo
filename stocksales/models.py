@@ -158,14 +158,19 @@ class ShopProductStatus(models.Model):
     shop_status = models.CharField(max_length=10, default='MVIN')
     shop_reference = models.ForeignKey(Shop, on_delete=models.PROTECT)
     timestamp = models.DateField(auto_now_add=True)
+    def __str__(self):
+        return self.shop_status
+
+    class Meta:
+        db_table = "shop_product_status"
 
 class Sales(models.Model):
 
     product_stock_in = models.ForeignKey(
         ProductStockIn, on_delete=models.PROTECT)
     shop = models.ForeignKey(Shop,  on_delete=models.PROTECT)
-    discount = models.IntegerField(max_length=20, default=0)
-    markup = models.IntegerField(max_length=20, default=0)
+    discount = models.IntegerField(default=0)
+    markup = models.IntegerField(default=0)
     actual_selling_price = models.FloatField(max_length=20)
     timestamp = models.DateField(auto_now_add=True)
 
