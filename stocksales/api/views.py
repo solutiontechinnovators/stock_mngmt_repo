@@ -694,6 +694,7 @@ def get_shop_product_by_imei(request):
         shop_product = ShopProduct.objects.filter(
             product_stock_in__imei_no=imei, shop_available_id=shop_id, status='IN')
         shop_p_s = ''
+        product_str = 'product not in shop'
         if shop_product:
             prod = ProductStockIn.objects.filter(imei_no=imei)
             shop_p_s = serializers.serialize(
@@ -769,6 +770,11 @@ def recieve_product_by_imei(request):
         if shop_product:
             ShopProduct.objects.filter(
                 product_stock_in__imei_no=imei, shop_available_id=shop_id, status='MVIN').update(status='IN')
+
+            product_id = shop_product[0].product_stock_in.id
+            product_status = ShopProductStatus(
+                product_stock_in=product_id, shop_status='IN', shop_reference_id=shop_id)
+            product_status.save()
             data['response'] = 'product received'
         else:
             data['response'] = 'product not sent to this stock'
@@ -819,7 +825,7 @@ def get_shop_product_by_brand(request):
         products_count = []
         model_typ = ShopProduct.objects.values('product_stock_in__phone_model__model_name', 'product_stock_in__phone_model__id').annotate(
             no_count=Count('product_stock_in__phone_model')).filter(product_stock_in__brand_id=id, shop_available_id=shop_id, status='IN')
-        
+
         for product in model_typ:
             obj = {}
             obj['model_id'] = product['product_stock_in__phone_model__id']
