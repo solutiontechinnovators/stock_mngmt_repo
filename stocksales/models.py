@@ -146,7 +146,7 @@ class ShopProduct(models.Model):
     timestamp = models.DateField(auto_now_add=True)
 
     def __str__(self):
-        return self.shop_available
+        return self.status
 
     class Meta:
         db_table = "shop_product"
