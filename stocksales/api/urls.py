@@ -49,6 +49,10 @@ urlpatterns = [
          name='recieve_product_by_imei'),
     path('sale_product', views.sale_product,
          name='sale_product'),
-
+    path('get_sale_product', views.get_sale_product,
+         name='get_sale_product'),
+    path('get_sales_by_brand', views.get_sales_by_brand,
+         name='get_sales_by_brand'),
+    path('sales_model_details', views.sales_model_details,
+         name='sales_model_details'),
 ]
-
