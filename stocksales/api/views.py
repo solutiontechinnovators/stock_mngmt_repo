@@ -422,79 +422,74 @@ def get_stock_to_shop_dtls(request):
         return Response(data)
 
 
-# stock in by phone type details mainly used to aggression
+
+
+# another version of stock in details
+
+# Sale Products details by brand and phone type
 @api_view(['GET', ])
 @permission_classes((IsAuthenticated,))
-def get_stock_in_by_phone_type(request):
+# @authentication_classes([])
+# @permission_classes([])viewing stock-in product
+def get_stock_in_details(request):
     if request.method == 'GET':
 
         data = {}
         products_type_count = []
         smartphone_brand_count = []
-        feature_phone_brand_count = []
-        phone_typ = PhoneType.objects.annotate(no_prod=Count('productstockin'))
+        usr = request.user
+        today = date.today()
+        
 
-        for product in phone_typ:
+        # phones count by phone type
+        products_by_phone_typ = ProductStockIn.objects.values('phone_type__id','phone_type__type_name', 'phone_type__id').annotate(
+            no_prod=Count('id')).filter(stock_status='in')
+        # phones count by Brand
+        prds_by_brand_typ = ProductStockIn.objects.values('brand__brand_name','brand__phone_type', 'brand__id').annotate(
+            no_prod=Count('id')).filter(stock_status='in')
+
+        for product in products_by_phone_typ:
             obj = {}
-            obj['name'] = product.type_name
-            obj['count'] = product.no_prod
+            obj['phone_type_id'] = product['phone_type__id']
+            obj['type name'] = product['phone_type__type_name']
+            obj['count'] = product['no_prod']
+   
             products_type_count.append(obj)
 
-        # smart phones count by Brand
-        brand_typ = Brand.objects.annotate(no_prod=Count('productstockin')).filter(
-            phone_type__type_name='Smart Phone')
-
-        for brand_ty in brand_typ:
+        for brand_ty in prds_by_brand_typ:
 
             obj1 = {}
-            obj1['id'] = brand_ty.id
-            obj1['brand'] = brand_ty.brand_name
-            obj1['count'] = brand_ty.no_prod
-
+            obj1['id'] = brand_ty['brand__id']
+            obj1['brand'] = brand_ty['brand__brand_name']
+            obj1['type'] = brand_ty['brand__phone_type']
+            obj1['count'] = brand_ty['no_prod']
             smartphone_brand_count.append(obj1)
 
-        # Feature phones count by Brand
-        featurephn_brand_typ = Brand.objects.annotate(no_prod=Count('productstockin')).filter(
-            phone_type__type_name='Feature Phones')
-
-        for brand_fp in featurephn_brand_typ:
-
-            obj1 = {}
-            obj1['id'] = brand_fp.id
-            obj1['brand'] = brand_fp.brand_name
-            obj1['count'] = brand_fp.no_prod
-
-            feature_phone_brand_count.append(obj1)
-        # phone_typ_s = serializers.serialize(
-        #     "json", phone_typ)
-
-        # phone_typ_str = json.loads(phone_typ_s)
-
         data['product count by type'] = products_type_count
-        data['smartphone count by Brand'] = smartphone_brand_count
-        data['featurephone count by Brand'] = feature_phone_brand_count
-
+        data['product count by Brand'] = smartphone_brand_count
+        
         return Response(data)
 
 
 # stock in by Brand details
-@api_view(['GET', ])
+@api_view(['POST'])
 @permission_classes((IsAuthenticated,))
 # @authentication_classes([])
 # @permission_classes([])viewing stock-in product
-def get_stock_in_by_model(request):
-    if request.method == 'GET':
-        id = request.query_params['id']
+def get_stock_in_by_brand(request):
+    if request.method == 'POST':
+        id = request.data['brand_id']
+        
         data = {}
         products_count = []
-        model_typ = PhoneModel.objects.annotate(
-            no_prod=Count('productstockin')).filter(brand__id=id)
+        model_typ = ProductStockIn.objects.values('phone_model__model_name', 'phone_model__id').annotate(
+            no_count=Count('id')).filter(brand_id=id, stock_status='in')
 
         for product in model_typ:
             obj = {}
-            obj['id'] = product.id
-            obj['name'] = product.model_name
-            obj['count'] = product.no_prod
+            obj['model_id'] = product['phone_model__id']
+            obj['name'] = product['phone_model__model_name']
+            obj['count'] = product['no_count']
             products_count.append(obj)
 
         data['model count'] = products_count
@@ -502,7 +497,78 @@ def get_stock_in_by_model(request):
         return Response(data)
 
 
-# stock in by Brand details
+# stock in  detail by model
+@api_view(['POST', ])
+@permission_classes((IsAuthenticated,))
+# @authentication_classes([])
+# @permission_classes([])viewing stock-in product
+def stock_in_details_by_model(request):
+    if request.method == 'POST':
+        model_id = request.data['model_id']
+        data = {}
+        product_in_by_model = []
+        
+        shop_prd_dtls = ProductStockIn.objects.filter(phone_model=model_id)
+
+        product_in_s = serializers.serialize(
+            "json", shop_prd_dtls)
+
+        product_str = json.loads(product_in_s)
+        if product_str:
+            j = 0
+            for product_ in product_str:
+
+                product_stock_in
+
+                phone_type_id = product_['fields']['phone_type']
+                brand_id = product_['fields']['brand']
+                phone_model_id = product_['fields']['phone_model']
+                color_id = product_['fields']['color']
+                storage_id = product_['fields']['storage']
+
+                phone_type_str = serializers.serialize(
+                    "json", PhoneType.objects.filter(id=phone_type_id))
+                phone_type_json = json.loads(phone_type_str)
+                if phone_type_json:
+                    product_str[j]['fields']['phone_type'] = phone_type_json[0]
+
+                brand_str = serializers.serialize(
+                    "json", Brand.objects.filter(id=brand_id))
+                brand_json = json.loads(brand_str)
+                if brand_json:
+                    product_str[j]['fields']['brand'] = brand_json[0]
+
+                phone_model_str = serializers.serialize(
+                    "json", PhoneModel.objects.filter(id=phone_model_id))
+                phone_model_json = json.loads(phone_model_str)
+                if phone_model_json:
+                    product_str[j]['fields']['phone_model'] = phone_model_json[0]
+
+                color_str = serializers.serialize(
+                    "json", Color.objects.filter(id=color_id))
+                color_json = json.loads(color_str)
+                if color_json:
+                    product_str[j]['fields']['color'] = color_json[0]
+
+                storage_str = serializers.serialize(
+                    "json", Storage.objects.filter(id=storage_id))
+                storage_json = json.loads(storage_str)
+                if storage_json:
+                    product_str[j]['fields']['storage'] = storage_json[0]
+                product_str[j]['fields'].pop('stock_status')
+                product_str[j]['fields'].pop('stock_loc')
+                product_str[j]['fields'].pop('timestamp_in')
+                product_str[j]['fields'].pop('timestamp_out')
+                product_str[j]['fields'].pop('user')
+                product_in_by_model.append(product_str)
+                j = j+1
+
+        data['model_details'] = product_in_by_model
+
+        return Response(data)
+
+
+# All product details
 @api_view(['GET', ])
 @permission_classes((IsAuthenticated,))
 # @authentication_classes([])
