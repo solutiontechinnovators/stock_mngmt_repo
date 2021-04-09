@@ -508,7 +508,7 @@ def stock_in_details_by_model(request):
         data = {}
         product_in_by_model = []
         
-        shop_prd_dtls = ProductStockIn.objects.filter(phone_model=model_id)
+        shop_prd_dtls = ProductStockIn.objects.filter(phone_model=model_id, stock_status='in')
 
         product_in_s = serializers.serialize(
             "json", shop_prd_dtls)
