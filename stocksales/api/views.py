@@ -16,7 +16,6 @@ from stocksales.models import *
 from datetime import datetime, date
 
 
-
 @api_view(['POST', ])
 @permission_classes((IsAuthenticated,))
 # @authentication_classes([])
@@ -422,8 +421,6 @@ def get_stock_to_shop_dtls(request):
         return Response(data)
 
 
-
-
 # another version of stock in details
 
 # Sale Products details by brand and phone type
@@ -439,13 +436,12 @@ def get_stock_in_details(request):
         smartphone_brand_count = []
         usr = request.user
         today = date.today()
-        
 
         # phones count by phone type
-        products_by_phone_typ = ProductStockIn.objects.values('phone_type__id','phone_type__type_name', 'phone_type__id').annotate(
+        products_by_phone_typ = ProductStockIn.objects.values('phone_type__id', 'phone_type__type_name', 'phone_type__id').annotate(
             no_prod=Count('id')).filter(stock_status='in')
         # phones count by Brand
-        prds_by_brand_typ = ProductStockIn.objects.values('brand__brand_name','brand__phone_type', 'brand__id').annotate(
+        prds_by_brand_typ = ProductStockIn.objects.values('brand__brand_name', 'brand__phone_type', 'brand__id').annotate(
             no_prod=Count('id')).filter(stock_status='in')
 
         for product in products_by_phone_typ:
@@ -453,7 +449,7 @@ def get_stock_in_details(request):
             obj['phone_type_id'] = product['phone_type__id']
             obj['type name'] = product['phone_type__type_name']
             obj['count'] = product['no_prod']
-   
+
             products_type_count.append(obj)
 
         for brand_ty in prds_by_brand_typ:
@@ -467,7 +463,7 @@ def get_stock_in_details(request):
 
         data['product count by type'] = products_type_count
         data['product count by Brand'] = smartphone_brand_count
-        
+
         return Response(data)
 
 
@@ -479,7 +475,7 @@ def get_stock_in_details(request):
 def get_stock_in_by_brand(request):
     if request.method == 'POST':
         id = request.data['brand_id']
-        
+
         data = {}
         products_count = []
         model_typ = ProductStockIn.objects.values('phone_model__model_name', 'phone_model__id').annotate(
@@ -507,8 +503,9 @@ def stock_in_details_by_model(request):
         model_id = request.data['model_id']
         data = {}
         product_in_by_model = []
-        
-        shop_prd_dtls = ProductStockIn.objects.filter(phone_model=model_id, stock_status='in')
+
+        shop_prd_dtls = ProductStockIn.objects.filter(
+            phone_model=model_id, stock_status='in')
 
         product_in_s = serializers.serialize(
             "json", shop_prd_dtls)
@@ -690,14 +687,15 @@ def move_stock_to_shop(request):
 
 
 # Shop Products details
-@api_view(['GET', ])
+@api_view(['POST', ])
 @permission_classes((IsAuthenticated,))
 # @authentication_classes([])
 # @permission_classes([])viewing stock-in product
 def get_shop_product(request):
-    if request.method == 'GET':
+    if request.method == 'POST':
 
         data = {}
+        shop_id = request.data['shop_id']
         products_type_count = []
         smartphone_brand_count = []
         usr = request.user
@@ -706,46 +704,54 @@ def get_shop_product(request):
         shp_assn = UserShopAssignment.objects.filter(
             user=usr, assignment_status='Active')
 
-        if positn:
-            if positn[0].position.position_code == 'P006':
-                # phones count by phone type
-                products_by_phone_typ = ShopProduct.objects.values('shop_available__shop_name', 'product_stock_in__phone_type__type_name', 'product_stock_in__phone_type__id').annotate(
-                    no_prod=Count('product_stock_in')).filter(shop_available=shp_assn[0].shop, status='IN')
-                # phones count by Brand
-                prds_by_brand_typ = ShopProduct.objects.values('shop_available__shop_name', 'product_stock_in__brand__brand_name',
-                                                               'product_stock_in__brand__id', 'product_stock_in__brand__phone_type__type_name').annotate(
-                    no_prod=Count('product_stock_in')).filter(shop_available=shp_assn[0].shop, status='IN')
-            else:
+        # if positn:
+        #     if positn[0].position.position_code == 'P006':
+        #         # phones count by phone type
+        #         products_by_phone_typ = ShopProduct.objects.values('shop_available__shop_name', 'product_stock_in__phone_type__type_name', 'product_stock_in__phone_type__id').annotate(
+        #             no_prod=Count('product_stock_in')).filter(shop_available=shop_id, status='IN')
+        #         # phones count by Brand
+        #         prds_by_brand_typ = ShopProduct.objects.values('shop_available__shop_name', 'product_stock_in__brand__brand_name',
+        #                                                        'product_stock_in__brand__id', 'product_stock_in__brand__phone_type__type_name').annotate(
+        #             no_prod=Count('product_stock_in')).filter(shop_available=shop_id, status='IN')
+        #     else:
 
-                # phones count by phone type
-                products_by_phone_typ = ShopProduct.objects.values('shop_available__shop_name', 'product_stock_in__phone_type__type_name', 'product_stock_in__phone_type__id').annotate(
-                    no_prod=Count('product_stock_in'))
-                # phones count by Brand
-                prds_by_brand_typ = ShopProduct.objects.values('shop_available__shop_name', 'product_stock_in__brand__brand_name',
-                                                               'product_stock_in__brand__id', 'product_stock_in__brand__phone_type__type_name').annotate(no_prod=Count('product_stock_in'))
+        #         # phones count by phone type
+        #         products_by_phone_typ = ShopProduct.objects.values('shop_available__shop_name', 'product_stock_in__phone_type__type_name', 'product_stock_in__phone_type__id').annotate(
+        #             no_prod=Count('product_stock_in'))
+        #         # phones count by Brand
+        #         prds_by_brand_typ = ShopProduct.objects.values('shop_available__shop_name', 'product_stock_in__brand__brand_name',
+        #                                                        'product_stock_in__brand__id', 'product_stock_in__brand__phone_type__type_name').annotate(no_prod=Count('product_stock_in'))
+        products_by_phone_typ = ShopProduct.objects.values('shop_available__shop_name','shop_available__id', 'product_stock_in__phone_type__type_name', 'product_stock_in__phone_type__id').annotate(
+            no_prod=Count('product_stock_in')).filter(shop_available_id=shop_id, status='IN')
+        # phones count by Brand
+        prds_by_brand_typ = ShopProduct.objects.values('shop_available__shop_name', 'product_stock_in__brand__brand_name',
+                                                       'product_stock_in__brand__id', 'product_stock_in__brand__phone_type__type_name').annotate(
+            no_prod=Count('product_stock_in')).filter(shop_available_id=shop_id, status='IN')
+        for product in products_by_phone_typ:
+            obj = {}
+            obj['type name'] = product['product_stock_in__phone_type__type_name']
+            obj['count'] = product['no_prod']
+            obj['shop'] = product['shop_available__shop_name']
+            obj['shop_id'] = product['shop_available__id']
+            products_type_count.append(obj)
 
-            for product in products_by_phone_typ:
-                obj = {}
-                obj['type name'] = product['product_stock_in__phone_type__type_name']
-                obj['count'] = product['no_prod']
-                obj['shop'] = product['shop_available__shop_name']
-                products_type_count.append(obj)
+        for brand_ty in prds_by_brand_typ:
 
-            for brand_ty in prds_by_brand_typ:
+            obj1 = {}
+            obj1['id'] = brand_ty['product_stock_in__brand__id']
+            obj1['brand'] = brand_ty['product_stock_in__brand__brand_name']
+            obj1['type'] = brand_ty['product_stock_in__brand__phone_type__type_name']
+            obj1['count'] = brand_ty['no_prod']
+            obj1['shop'] = product['shop_available__shop_name']
+            obj1['shop_id'] = product['shop_available__id']
+            
 
-                obj1 = {}
-                obj1['id'] = brand_ty['product_stock_in__brand__id']
-                obj1['brand'] = brand_ty['product_stock_in__brand__brand_name']
-                obj1['type'] = brand_ty['product_stock_in__brand__phone_type__type_name']
-                obj1['count'] = brand_ty['no_prod']
-                obj1['shop'] = product['shop_available__shop_name']
-
-                smartphone_brand_count.append(obj1)
+            smartphone_brand_count.append(obj1)
 
             data['product count by type'] = products_type_count
             data['product count by Brand'] = smartphone_brand_count
-        else:
-            data['info'] = 'User not assigned any position'
+        # else:
+        #     data['info'] = 'User not assigned any position'
         return Response(data)
 
 
@@ -1013,15 +1019,15 @@ def get_sale_product(request):
         products_by_phone_typ = Sales.objects.values('shop__shop_name', 'product_stock_in__phone_type__type_name', 'product_stock_in__phone_type__id').annotate(
             no_prod=Count('product_stock_in')).filter(shop_id=shop_id)
         # phones count by Brand
-        prds_by_brand_typ = Sales.objects.values('shop__shop_name','shop__id', 'product_stock_in__brand__brand_name','product_stock_in__brand__id', 'product_stock_in__brand__phone_type__type_name').annotate(no_prod=Count('product_stock_in')).filter(shop_id=shop_id)
+        prds_by_brand_typ = Sales.objects.values('shop__shop_name', 'shop__id', 'product_stock_in__brand__brand_name', 'product_stock_in__brand__id',
+                                                 'product_stock_in__brand__phone_type__type_name').annotate(no_prod=Count('product_stock_in')).filter(shop_id=shop_id)
 
         for product in products_by_phone_typ:
             obj = {}
             obj['type name'] = product['product_stock_in__phone_type__type_name']
             obj['count'] = product['no_prod']
             obj['shop'] = product['shop__shop_name']
-            
-            
+
             products_type_count.append(obj)
 
         for brand_ty in prds_by_brand_typ:
@@ -1033,13 +1039,12 @@ def get_sale_product(request):
             obj1['count'] = brand_ty['no_prod']
             obj1['shop'] = brand_ty['shop__shop_name']
             obj1['shop_id'] = brand_ty['shop__id']
-            
 
             smartphone_brand_count.append(obj1)
 
         data['product count by type'] = products_type_count
         data['product count by Brand'] = smartphone_brand_count
-        
+
         return Response(data)
 
 
@@ -1144,4 +1149,3 @@ def sales_model_details(request):
         data['sales_products_details'] = sale_products_by_model
 
         return Response(data)
-
