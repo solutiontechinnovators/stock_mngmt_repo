@@ -183,6 +183,7 @@ def administration_api(request):
             position_id = position_asigned_json['fields']['position']
             supervisor_id = position_asigned_json['fields']['supervisor']
             position_assigned_by = position_asigned_json['fields']['assigned_by']
+
             user_str = serializers.serialize(
                 "json", User.objects.filter(id=user_id), fields=('first_name', 'last_name', 'email'))
 
@@ -279,5 +280,183 @@ def shop_details(request):
             "json", shop_details)
         data = {}
         data['shop_details'] = shp_details
-        
+
         return Response(data)
+
+# retrieving all positions
+@api_view(['GET', ])
+@permission_classes((IsAuthenticated,))
+# @authentication_classes([])
+# @permission_classes([])
+def position_list(request):
+    if request.method == 'GET':
+        # First getting the object id
+        position_list = Position.objects.all()
+        positn_list = serializers.serialize(
+            "json", position_list, fields=('position_name', 'position_code'))
+        data = {}
+        data['position_list'] = positn_list
+
+        return Response(data)
+
+# retrieving all users without positions
+@api_view(['GET', ])
+@permission_classes((IsAuthenticated,))
+# @authentication_classes([])
+# @permission_classes([])
+def unassined_user_list(request):
+    if request.method == 'GET':
+        # First getting the object id
+        users = User.objects.all()
+        unassingned_users = []
+        for user in users:
+            assigned_user = UserPositionAssignment.objects.filter(user=user)
+            if assigned_user:
+                pass
+            else:
+                unassingned_users.append(user)
+
+        un_assigned_list = serializers.serialize(
+            "json", unassingned_users, fields=('first_name', 'last_name', 'email'))
+        print(len(unassingned_users))
+        data = {}
+        data['position_unassigned_user_list'] = un_assigned_list
+
+        return Response(data)
+
+# retrieving all users without positions
+@api_view(['GET', ])
+@permission_classes((IsAuthenticated,))
+# @authentication_classes([])
+# @permission_classes([])
+def assined_user_list(request):
+    if request.method == 'GET':
+        # First getting the object id
+        position_assigned = serializers.serialize(
+            "json", UserPositionAssignment.objects.all())
+
+        positions_asigned_json = json.loads(position_assigned)
+        i = 0
+
+        # populating id's with corresponding objects in position assigned
+        for position_asigned_json in positions_asigned_json:
+
+            user_id = position_asigned_json['fields']['user']
+            position_id = position_asigned_json['fields']['position']
+            supervisor_id = position_asigned_json['fields']['supervisor']
+            position_assigned_by = position_asigned_json['fields']['assigned_by']
+            user_str = serializers.serialize(
+                "json", User.objects.filter(id=user_id), fields=('first_name', 'last_name', 'email'))
+
+            user_json = json.loads(user_str)
+            # positions_asigned_json['fields']['user']
+            if user_json:
+                positions_asigned_json[i]['fields']['user'] = user_json[0]
+
+            position_str = serializers.serialize(
+                "json", Position.objects.filter(id=position_id))
+            position_json = json.loads(position_str)
+            if position_json:
+                positions_asigned_json[i]['fields']['position'] = position_json[0]
+
+            supervisor_str = serializers.serialize(
+                "json", User.objects.filter(id=supervisor_id), fields=('first_name', 'last_name', 'email'))
+            supervisor_json = json.loads(supervisor_str)
+            if supervisor_json:
+                positions_asigned_json[i]['fields']['supervisor'] = supervisor_json[0]
+
+            position_assigned_by_str = serializers.serialize(
+                "json", User.objects.filter(id=position_assigned_by), fields=('first_name', 'last_name', 'email'))
+            position_assigned_json = json.loads(position_assigned_by_str)
+            if position_assigned_json:
+                positions_asigned_json[i]['fields']['assigned_by'] = position_assigned_json[0]
+
+            i = i+1
+
+        return Response({'position_assignments': positions_asigned_json})
+
+# retrieving all shops
+@api_view(['GET', ])
+@permission_classes((IsAuthenticated,))
+# @authentication_classes([])
+# @permission_classes([])
+def shop_list(request):
+    if request.method == 'GET':
+        # First getting the object id
+        shops_list = Shop.objects.all()
+        shop_list = serializers.serialize(
+            "json", shops_list)
+        data = {}
+        data['shop_list'] = shop_list
+
+        return Response(data)
+
+
+# retrieving all users not assigned to shops
+@api_view(['GET', ])
+@permission_classes((IsAuthenticated,))
+# @authentication_classes([])
+# @permission_classes([])
+def user_without_shop(request):
+    if request.method == 'GET':
+        # First getting the object id
+        users = User.objects.all()
+        unassingned_users = []
+        for user in users:
+            assigned_user = UserShopAssignment.objects.filter(user=user)
+            if assigned_user:
+                pass
+            else:
+                unassingned_users.append(user)
+
+        un_assigned_list = serializers.serialize(
+            "json", unassingned_users, fields=('first_name', 'last_name', 'email'))
+        print(len(unassingned_users))
+        data = {}
+        data['shop_unassigned_user_list'] = un_assigned_list
+
+        return Response(data)
+
+# retrieving all users with shops assigned
+@api_view(['GET', ])
+@permission_classes((IsAuthenticated,))
+# @authentication_classes([])
+# @permission_classes([])
+def shop_assigned_user_list(request):
+    if request.method == 'GET':
+        # First getting the object id
+        shops_assignment_obj = serializers.serialize(
+            "json", UserShopAssignment.objects.all())
+        shops_assignment_json_obj = json.loads(shops_assignment_obj)
+
+        # ------------------
+        j = 0
+        for shop_assignment_json_obj in shops_assignment_json_obj:
+
+            user_id = shop_assignment_json_obj['fields']['user']
+            shop_id = shop_assignment_json_obj['fields']['shop']
+            assigned_by_id = shop_assignment_json_obj['fields']['assigned_by']
+            shops_assignment_json_obj[j]['fields'].pop('timestamp')
+            user_str = serializers.serialize(
+                "json", User.objects.filter(id=user_id), fields=('first_name', 'last_name', 'email'))
+
+            user_json = json.loads(user_str)
+
+            if user_json:
+                shops_assignment_json_obj[j]['fields']['user'] = user_json[0]
+
+            shop_str = serializers.serialize(
+                "json", Shop.objects.filter(id=shop_id))
+            shop_json = json.loads(shop_str)
+            if shop_json:
+                shops_assignment_json_obj[j]['fields']['shop'] = shop_json[0]
+
+            assigned_by_str = serializers.serialize(
+                "json", User.objects.filter(id=assigned_by_id), fields=('first_name', 'last_name', 'email'))
+            assigned_by_json = json.loads(assigned_by_str)
+            if assigned_by_json:
+                shops_assignment_json_obj[j]['fields']['assigned_by'] = assigned_by_json[0]
+
+            j = j+1
+
+        return Response({'shop_assignment_list': shops_assignment_json_obj})

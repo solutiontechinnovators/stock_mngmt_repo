@@ -19,8 +19,6 @@ urlpatterns = [
          name='product_stock_in'),
     path('shop_product', views.shop_product,
          name='shop_product'),
-    path('sales_product', views.sales_product,
-         name='sales_product'),
     path('stock_admin', views.stock_admin,
          name='stock_admin'),
     # not really neccessary
