@@ -26,4 +26,4 @@ class PositionAssignmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserPositionAssignment
         fields = ['user', 'position',
-                  'assignment_status', 'supervisor', 'assigned_by']
+                  'assignment_status', 'supervisor']

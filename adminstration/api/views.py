@@ -25,7 +25,7 @@ def shop_registration_api(request):
 
         if serializer.is_valid():
             position = serializer.save()
-            data['Response'] = 'Position registered successfully'
+            data['Response'] = 'Shop registered successfully'
             data['shop_name'] = position.shop_name
 
         else:
@@ -88,8 +88,10 @@ def shop_assignment(request):
 def shop_assignment_update(request):
     if request.method == 'POST':
         # First getting the object id
-        obj_id = request.data.get('id')
+        obj_id = request.data.get('shop_assignment_id')
         data_from_post = request.data
+        user = request.user
+        data_from_post['assigned_by'] = user.id
         # serializer = PositionAssignmentSerializer(data=request.data)
         data = {}
         shop_assign_obj = UserShopAssignment.objects.get(id=obj_id)
@@ -100,7 +102,7 @@ def shop_assignment_update(request):
             # validatedData = serializer.validated_data
 
             updated_shop_assignment = user_shop_update_serializer.save()
-            data['Response'] = 'User assignment updated successfully'
+            data['Response'] = 'Shop assignment updated successfully'
 
         else:
             data = user_shop_update_serializer.errors
@@ -113,9 +115,9 @@ def position_assignment_api(request):
     if request.method == 'POST':
         serializer = PositionAssignmentSerializer(data=request.data)
         data = {}
-
+        logged_user = request.user
         if serializer.is_valid():
-            position = serializer.save()
+            position = serializer.save(assigned_by=logged_user)
             if position:
                 User.objects.filter(id=position.user.id).update(
                     is_active=True, is_staff=True)
@@ -133,8 +135,10 @@ def position_assignment_api(request):
 def user_assignment_update_api(request):
     if request.method == 'POST':
         # First getting the object id
-        obj_id = request.data.get('id')
+        obj_id = request.data.get('assignment_id')
         data_from_post = request.data
+        user = request.user
+        data_from_post['assigned_by'] = user.id
         # serializer = PositionAssignmentSerializer(data=request.data)
         data = {}
         position_assign_obj = UserPositionAssignment.objects.get(id=obj_id)
