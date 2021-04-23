@@ -41,10 +41,10 @@ class CustomObtainAuthToken(ObtainAuthToken):
         #     "json", User.objects.all(), fields=('first_name'))
         user = User.objects.get(id=token.user_id)
         assigned_position = UserPositionAssignment.objects.filter(
-            user_id=user.id, assignment_status='Active')
+            user_id=user.id, assignment_status='active')
 
         shop_assigned = UserShopAssignment.objects.filter(
-            user_id=user.id, assignment_status='Active')
+            user_id=user.id, assignment_status='active')
 
         # if assigned_position:
         position_code = ''
