@@ -44,7 +44,7 @@ class CustomObtainAuthToken(ObtainAuthToken):
             user_id=user.id, assignment_status='active')
 
         shop_assigned = UserShopAssignment.objects.filter(
-            user_id=user.id, assignment_status='active')
+            user_id=user.id, assignment_status='Active')
 
         # if assigned_position:
         position_code = ''

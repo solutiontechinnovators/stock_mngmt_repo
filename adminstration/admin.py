@@ -25,8 +25,14 @@ class UserPositionAssignmentAdmin(admin.ModelAdmin):
     list_per_page = 5  # No of records per page
     list_filter = ('position',)
 
+class UserShopAssignmentAdmin(admin.ModelAdmin):
+    list_display = ['user', 'shop',
+                    'assignment_status', 'timestamp', 'assigned_by']
+    # ordering = ['last_login']
+    list_per_page = 5  # No of records per page
+    # list_filter = ('position',)
 
 admin.site.register(Position,  PositionAdmin)
 admin.site.register(Shop,  ShopAdmin)
 admin.site.register(UserPositionAssignment, UserPositionAssignmentAdmin)
-admin.site.register(UserShopAssignment)
+admin.site.register(UserShopAssignment, UserShopAssignmentAdmin)
