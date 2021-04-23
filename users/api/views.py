@@ -59,7 +59,7 @@ class CustomObtainAuthToken(ObtainAuthToken):
         if shop_assigned:
             shop = shop_assigned[0].shop
             shop_id = shop.id
-            shop_location = shop.sector
+            shop_location = shop.shop_name
 
         return Response({'token': token.key, 'user_email': user.email, 'first_name': user.first_name, 'last_name': user.last_name, 'position_name': position_name, 'position_code': position_code, 'shop_id': shop_id, 'shop_location': shop_location})
 
