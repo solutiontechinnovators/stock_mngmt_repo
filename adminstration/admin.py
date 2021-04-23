@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Position, Shop, UserPositionAssignment
+from .models import Position, Shop, UserPositionAssignment, UserShopAssignment
 
 # Register your models here.
 
@@ -29,3 +29,4 @@ class UserPositionAssignmentAdmin(admin.ModelAdmin):
 admin.site.register(Position,  PositionAdmin)
 admin.site.register(Shop,  ShopAdmin)
 admin.site.register(UserPositionAssignment, UserPositionAssignmentAdmin)
+admin.site.register(UserShopAssignment)
