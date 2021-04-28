@@ -137,21 +137,27 @@ def reg_storage(request):
 # @permission_classes([])
 def product_stock_in(request):
     if request.method == 'POST':
-        serializer = ProductStockInSerializer(data=request.data)
-        data = {}
+        posted_data = request.data
+        imei_lists = posted_data['imei_no']
+        
+        for imei in imei_lists:
+            posted_data['imei_no']= imei
+            serializer = ProductStockInSerializer(data=posted_data)
+            data = {}
 
-        if serializer.is_valid():
-            user = request.user
-            location = Shop.objects.filter(shop_no=1)
-            serializer.save(user=user, stock_loc=location[0])
-            product_stock_in_obj = ProductStockIn.objects.all()
-            # data['Response'] = 'Position registered successfully'
-            product_stock_in_s = serializers.serialize(
-                "json", product_stock_in_obj)
-            data['product_stock_in'] = product_stock_in_s
+            if serializer.is_valid():
+                user = request.user
+                location = Shop.objects.filter(shop_no=1)
+                serializer.save(user=user, stock_loc=location[0])
+                product_stock_in_obj = 'data saved'
+                # data['Response'] = 'Position registered successfully'
+                # product_stock_in_s = serializers.serialize(
+                #     "json", product_stock_in_obj)
+                data['product_stock_in'] = product_stock_in_obj
 
-        else:
-            data = serializer.errors
+            else:
+                data = serializer.errors
+        
         return Response(data)
 
 
