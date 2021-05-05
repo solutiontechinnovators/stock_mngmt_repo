@@ -139,9 +139,9 @@ def product_stock_in(request):
     if request.method == 'POST':
         posted_data = request.data
         imei_lists = posted_data['imei_no']
-        
+
         for imei in imei_lists:
-            posted_data['imei_no']= imei
+            posted_data['imei_no'] = imei
             serializer = ProductStockInSerializer(data=posted_data)
             data = {}
 
@@ -157,7 +157,7 @@ def product_stock_in(request):
 
             else:
                 data = serializer.errors
-        
+
         return Response(data)
 
 
@@ -563,10 +563,10 @@ def stock_in_details_by_model(request):
                 product_str[j]['fields'].pop('timestamp_in')
                 product_str[j]['fields'].pop('timestamp_out')
                 product_str[j]['fields'].pop('user')
-                
+
                 j = j+1
         product_in_by_model.append(product_str)
-        data['model_details'] = product_in_by_model
+        data['model_details'] = product_str
 
         return Response(data)
 
@@ -727,7 +727,7 @@ def get_shop_product(request):
         #         # phones count by Brand
         #         prds_by_brand_typ = ShopProduct.objects.values('shop_available__shop_name', 'product_stock_in__brand__brand_name',
         #                                                        'product_stock_in__brand__id', 'product_stock_in__brand__phone_type__type_name').annotate(no_prod=Count('product_stock_in'))
-        products_by_phone_typ = ShopProduct.objects.values('shop_available__shop_name','shop_available__id', 'product_stock_in__phone_type__type_name', 'product_stock_in__phone_type__id').annotate(
+        products_by_phone_typ = ShopProduct.objects.values('shop_available__shop_name', 'shop_available__id', 'product_stock_in__phone_type__type_name', 'product_stock_in__phone_type__id').annotate(
             no_prod=Count('product_stock_in')).filter(shop_available_id=shop_id, status='IN')
         # phones count by Brand
         prds_by_brand_typ = ShopProduct.objects.values('shop_available__shop_name', 'product_stock_in__brand__brand_name',
@@ -750,7 +750,6 @@ def get_shop_product(request):
             obj1['count'] = brand_ty['no_prod']
             obj1['shop'] = product['shop_available__shop_name']
             obj1['shop_id'] = product['shop_available__id']
-            
 
             smartphone_brand_count.append(obj1)
 
