@@ -79,7 +79,7 @@ class Storage(models.Model):
 
 class ProductStockIn(models.Model):
 
-    imei_no = models.CharField(max_length=100)
+    imei_no = models.CharField(max_length=100, unique=True)
     user = models.ForeignKey(User, on_delete=models.PROTECT)
     phone_type = models.ForeignKey(PhoneType, on_delete=models.PROTECT)
     brand = models.ForeignKey(Brand, on_delete=models.PROTECT)

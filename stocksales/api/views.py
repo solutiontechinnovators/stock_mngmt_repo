@@ -563,9 +563,9 @@ def stock_in_details_by_model(request):
                 product_str[j]['fields'].pop('timestamp_in')
                 product_str[j]['fields'].pop('timestamp_out')
                 product_str[j]['fields'].pop('user')
-                product_in_by_model.append(product_str)
+                
                 j = j+1
-
+        product_in_by_model.append(product_str)
         data['model_details'] = product_in_by_model
 
         return Response(data)
