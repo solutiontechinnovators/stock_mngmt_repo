@@ -337,7 +337,7 @@ def assined_user_list(request):
     if request.method == 'GET':
         # First getting the object id
         position_assigned = serializers.serialize(
-            "json", UserPositionAssignment.objects.all())
+            "json", UserPositionAssignment.objects.filter(assignment_status='active'))
 
         positions_asigned_json = json.loads(position_assigned)
         i = 0
@@ -430,7 +430,7 @@ def shop_assigned_user_list(request):
     if request.method == 'GET':
         # First getting the object id
         shops_assignment_obj = serializers.serialize(
-            "json", UserShopAssignment.objects.all())
+            "json", UserShopAssignment.objects.filter(assignment_status='Active'))
         shops_assignment_json_obj = json.loads(shops_assignment_obj)
 
         # ------------------
