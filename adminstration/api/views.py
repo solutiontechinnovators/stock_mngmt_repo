@@ -498,8 +498,8 @@ def shop_re_assignment(request):
 
         data = {}
         UserShopAssignment.objects.filter(
-            user_id = user_id, assignment_status='active').update(assignment_status='inactive')
-        UserShopAssignment(user_id = user_id, assignment_status='active',shop_id=shop_id, assigned_by=user).save()
+            user_id = user_id, assignment_status='Active').update(assignment_status='Inactive')
+        UserShopAssignment(user_id = user_id, assignment_status='Active',shop_id=shop_id, assigned_by=user).save()
         data = 're assigned successfully'
         return Response(data)
 
