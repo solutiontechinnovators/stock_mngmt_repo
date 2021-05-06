@@ -35,4 +35,8 @@ urlpatterns = [
          name='user_without_shop'),
     path('shop_assigned_user_list', views.shop_assigned_user_list,
          name='shop_assigned_user_list'),
+    path('position_re_assignment', views.position_re_assignment,
+         name='position_re_assignment'),
+     path('shop_re_assignment', views.shop_re_assignment,
+         name='shop_re_assignment'),
 ]

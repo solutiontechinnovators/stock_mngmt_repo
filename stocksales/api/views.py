@@ -565,7 +565,7 @@ def stock_in_details_by_model(request):
                 product_str[j]['fields'].pop('user')
 
                 j = j+1
-        product_in_by_model.append(product_str)
+        # product_in_by_model.append(product_str)
         data['model_details'] = product_str
 
         return Response(data)
@@ -1225,3 +1225,5 @@ def get_list_details(request):
         data['product_stock_in_details'] = product_str
 
         return Response(data)
+
+

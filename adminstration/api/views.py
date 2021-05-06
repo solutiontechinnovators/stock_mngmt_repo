@@ -464,3 +464,42 @@ def shop_assigned_user_list(request):
             j = j+1
 
         return Response({'shop_assignment_list': shops_assignment_json_obj})
+
+
+# position re assignment
+@api_view(['POST', ])
+@permission_classes((IsAuthenticated,))
+def position_re_assignment(request):
+    if request.method == 'POST':
+        data_from_post = request.data
+
+        user_id = data_from_post['user_id']
+        position_id = data_from_post['position_id']
+        user = request.user
+
+        data = {}
+        UserPositionAssignment.objects.filter(
+            user_id = user_id, assignment_status='active').update(assignment_status='inactive')
+        UserPositionAssignment(user_id = user_id, assignment_status='active', supervisor=user ,position_id=position_id, assigned_by=user).save()
+        data = 're assigned successfully'
+        return Response(data)
+
+
+# shop re assignment
+@api_view(['POST', ])
+@permission_classes((IsAuthenticated,))
+def shop_re_assignment(request):
+    if request.method == 'POST':
+        data_from_post = request.data
+
+        user_id = data_from_post['user_id']
+        shop_id = data_from_post['shop_id']
+        user = request.user
+
+        data = {}
+        UserShopAssignment.objects.filter(
+            user_id = user_id, assignment_status='active').update(assignment_status='inactive')
+        UserShopAssignment(user_id = user_id, assignment_status='active',shop_id=shop_id, assigned_by=user).save()
+        data = 're assigned successfully'
+        return Response(data)
+
