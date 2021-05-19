@@ -139,15 +139,15 @@ def product_stock_in(request):
     if request.method == 'POST':
         posted_data = request.data
         imei_lists = posted_data['imei_no']
-
+        
         for imei in imei_lists:
             posted_data['imei_no'] = imei
             serializer = ProductStockInSerializer(data=posted_data)
             data = {}
-
+            
             if serializer.is_valid():
                 user = request.user
-                location = Shop.objects.filter(shop_no=1)
+                location = Shop.objects.filter(shop_no=100)
                 serializer.save(user=user, stock_loc=location[0])
                 product_stock_in_obj = 'data saved'
                 # data['Response'] = 'Position registered successfully'
