@@ -1237,7 +1237,7 @@ def stock_dtls_by_date(request):
         #first check which shop(if it's main stock, then we query the ProductStockIn else we query the ShopProduct model)
         shop = Shop.objects.get(id=shop_id)
         shop_no = shop.shop_no
-        if shop_no == 65:
+        if shop_no == 100:
 
             # products in by phone type
             products_by_phone_typ = ProductStockIn.objects.values('phone_type__id', 'phone_type__type_name', 'phone_type__id').annotate(
