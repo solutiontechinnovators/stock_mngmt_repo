@@ -56,4 +56,10 @@ urlpatterns = [
          name='sales_model_details'),
     path('stock_in_details_by_model', views.stock_in_details_by_model,
          name='stock_in_details_by_model'),
+    path('stock_dtls_by_date', views.stock_dtls_by_date,
+         name='stock_dtls_by_date'),
+    path('get_stock_in_out_by_brand_by_date', views.get_stock_in_out_by_brand_by_date,
+         name='get_stock_in_out_by_brand_by_date'),
+    path('products_in_out_by_model_by_date', views.products_in_out_by_model_by_date,
+         name='products_in_out_by_model_by_date'),
 ]
