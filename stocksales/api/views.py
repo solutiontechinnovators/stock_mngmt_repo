@@ -1436,13 +1436,16 @@ def products_sent_report_by_type(request):
         second_date_str = request.data['second_date']
         second_date_obj = datetime.strptime(second_date_str, '%m/%d/%Y')
 
+        print('tell me i wana sloooooooooooooow downnnnnnnnnnnnnn')
         #details of products sent from main stock to shops
         products_by_phone_type_to_shops = ShopToShop.objects.values('shop_to__shop_name', 'shop_to__id', 'product_stock_in__phone_type__type_name', 'product_stock_in__phone_type__id').annotate(
             no_prod=Count('product_stock_in')).filter(timestamp__range=[first_date_obj, second_date_obj], shop_from__shop_no='100')
-        
+        print(products_by_phone_type_to_shops)
         #All products sent to the shops but not yet received
         un_recvd_products_by_phone_type_to_shops = ShopProduct.objects.values('shop_available__shop_name', 'shop_available__id', 'product_stock_in__phone_type__type_name', 'product_stock_in__phone_type__id').annotate(
             no_prod=Count('product_stock_in')).filter(timestamp__range=[first_date_obj, second_date_obj], status='MVIN')
+        print('noooooooot receiveddddddddddd')
+        print(un_recvd_products_by_phone_type_to_shops)
         for product in products_by_phone_type_to_shops:
             obj = {}
             obj['model type name'] = product['product_stock_in__phone_type__type_name']
@@ -1655,7 +1658,7 @@ def products_not_recieved_by_brand(request):
         second_date_obj = datetime.strptime(second_date_str, '%m/%d/%Y')
 
         #details of products sent from main stock to shops and not yet recieved by brand
-        products_by_brand_not_recvd = ShopProduct.objects.values('shop_available__shop_name', 'shop_available__id', 'product_stock_in__brand__brand_name', 'product_stock_in__brand__id').annotate(
+        products_by_brand_not_recvd = ShopProduct.objects.values('shop_available__shop_name', 'shop_available__id', 'product_stock_in__brand__brand_name', 'product_stock_in__brand__id', 'product_stock_in__buying_price').annotate(
             no_prod=Count('product_stock_in')).filter(timestamp__range=[first_date_obj, second_date_obj], product_stock_in__phone_type__id=phone_type_id,shop_available=shop_id, status='MVIN')
         
         
@@ -1668,6 +1671,7 @@ def products_not_recieved_by_brand(request):
             obj['count'] = product['no_prod']
             obj['shop'] = product['shop_available__shop_name']
             obj['shop_id'] = product['shop_available__id']
+            obj['buying price'] = product['product_stock_in__buying_price']
             not_recieved_prdt_by_brand.append(obj)
 
             data['products_not_yet_recvd_by_brand'] = not_recieved_prdt_by_brand
