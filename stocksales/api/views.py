@@ -1415,3 +1415,387 @@ def products_in_out_by_model_by_date(request):
         data['product_stock_in_details'] = product_str
 
         return Response(data)
+
+
+# Displaying the report for both sent products and recieved products
+@api_view(['POST', ])
+@permission_classes((IsAuthenticated,))
+# @authentication_classes([])
+# @permission_classes([])viewing stock-in product
+def products_sent_report_by_type(request):
+    if request.method == 'POST':
+
+        data = {}
+        
+        dispatched_frm_stck_by_phone_type = []
+        dispatched_and_not_received = []
+         
+        usr = request.user
+        first_date_str = request.data['first_date']       
+        first_date_obj = datetime.strptime(first_date_str, '%m/%d/%Y')
+        second_date_str = request.data['second_date']
+        second_date_obj = datetime.strptime(second_date_str, '%m/%d/%Y')
+
+        #details of products sent from main stock to shops
+        products_by_phone_type_to_shops = ShopToShop.objects.values('shop_to__shop_name', 'shop_to__id', 'product_stock_in__phone_type__type_name', 'product_stock_in__phone_type__id').annotate(
+            no_prod=Count('product_stock_in')).filter(timestamp__range=[first_date_obj, second_date_obj], shop_from__shop_no='100')
+        
+        #All products sent to the shops but not yet received
+        un_recvd_products_by_phone_type_to_shops = ShopProduct.objects.values('shop_available__shop_name', 'shop_available__id', 'product_stock_in__phone_type__type_name', 'product_stock_in__phone_type__id').annotate(
+            no_prod=Count('product_stock_in')).filter(timestamp__range=[first_date_obj, second_date_obj], status='MVIN')
+        for product in products_by_phone_type_to_shops:
+            obj = {}
+            obj['model type name'] = product['product_stock_in__phone_type__type_name']
+            obj['model type id'] = product['product_stock_in__phone_type__id']
+            obj['count'] = product['no_prod']
+            obj['shop'] = product['shop_to__shop_name']
+            obj['shop_id'] = product['shop_to__id']
+            dispatched_frm_stck_by_phone_type.append(obj)
+
+        for product in un_recvd_products_by_phone_type_to_shops:
+
+            obj = {}
+            obj['model type name'] = product['product_stock_in__phone_type__type_name']
+            obj['model type id'] = product['product_stock_in__phone_type__id']
+            obj['count'] = product['no_prod']
+            obj['shop'] = product['shop_available__shop_name']
+            obj['shop_id'] = product['shop_available__id']
+            dispatched_frm_stck_by_phone_type.append(obj)
+
+            dispatched_and_not_received.append(obj)
+
+            data['products_sent_from_main_stock_bytype'] = dispatched_frm_stck_by_phone_type
+            data['product_list_not_received_bytype'] = dispatched_and_not_received
+        # else:
+        #     data['info'] = 'User not assigned any position'
+        return Response(data)
+
+
+#retrieving brands that are being moved to a certain shop.
+@api_view(['POST', ])
+@permission_classes((IsAuthenticated,))
+# @authentication_classes([])
+# @permission_classes([])viewing stock-in product
+def products_sent_report_by_brand(request):
+    if request.method == 'POST':
+
+        data = {}
+        
+        dispatched_frm_stck_by_brand = []
+        shop_id = request.data['shop_id']
+        phone_type_id = request.data['phone_type_id']
+        first_date_str = request.data['first_date']       
+        first_date_obj = datetime.strptime(first_date_str, '%m/%d/%Y')
+        second_date_str = request.data['second_date']
+        second_date_obj = datetime.strptime(second_date_str, '%m/%d/%Y')
+
+        #details of products sent from main stock to shops by brand
+        products_by_brand_to_shops = ShopToShop.objects.values('shop_to__shop_name', 'shop_to__id', 'product_stock_in__brand__brand_name', 'product_stock_in__brand__id').annotate(
+            no_prod=Count('product_stock_in')).filter(timestamp__range=[first_date_obj, second_date_obj], shop_from__shop_no='100', product_stock_in__phone_type__id=phone_type_id,shop_to=shop_id)
+        
+        
+
+        for product in products_by_brand_to_shops:
+
+            obj = {}
+            obj['brand name'] = product['product_stock_in__brand__brand_name']
+            obj['brand id'] = product['product_stock_in__brand__id']
+            obj['count'] = product['no_prod']
+            obj['shop'] = product['shop_to__shop_name']
+            obj['shop_id'] = product['shop_to__id']
+            dispatched_frm_stck_by_brand.append(obj)
+
+            data['products_sent_from_main_stock_bybrand'] = dispatched_frm_stck_by_brand
+        # else:
+        #     data['info'] = 'User not assigned any position'
+        return Response(data)
+
+
+#retrieving models for a specific brand that are being moved to a certain shop.
+@api_view(['POST', ])
+@permission_classes((IsAuthenticated,))
+# @authentication_classes([])
+# @permission_classes([])viewing stock-in product
+def products_sent_report_by_model(request):
+    if request.method == 'POST':
+
+        data = {}
+        
+        dispatched_frm_stck_by_model = []
+        shop_id = request.data['shop_id']
+        brand_id = request.data['brand_id']
+        first_date_str = request.data['first_date']       
+        first_date_obj = datetime.strptime(first_date_str, '%m/%d/%Y')
+        second_date_str = request.data['second_date']
+        second_date_obj = datetime.strptime(second_date_str, '%m/%d/%Y')
+
+        #details of products sent from main stock to shops
+        products_by_model_to_shops = ShopToShop.objects.values('shop_to__shop_name', 'shop_to__id', 'product_stock_in__phone_model__model_name', 'product_stock_in__phone_model__id').annotate(
+            no_prod=Count('product_stock_in')).filter(timestamp__range=[first_date_obj, second_date_obj], shop_from__shop_no='100', product_stock_in__brand__id=brand_id, shop_to=shop_id)
+        
+        
+
+        for product in products_by_model_to_shops:
+
+            obj = {}
+            obj['model name'] = product['product_stock_in__phone_model__model_name']
+            obj['model id'] = product['product_stock_in__phone_model__id']
+            obj['count'] = product['no_prod']
+            obj['shop'] = product['shop_to__shop_name']
+            obj['shop_id'] = product['shop_to__id']
+            dispatched_frm_stck_by_model.append(obj)
+
+            data['products_sent_from_main_stock_bymodel'] = dispatched_frm_stck_by_model
+        # else:
+        #     data['info'] = 'User not assigned any position'
+        return Response(data)
+
+
+
+# All product details to a particular shop by model in a given date range 
+@api_view(['POST', ])
+@permission_classes((IsAuthenticated,))
+# @authentication_classes([])
+# @permission_classes([])viewing stock-in product
+def products_to_shop_in_given_range(request):
+    if request.method == 'POST':
+        model_id = request.data['model_id']
+        shop_id = request.data['shop_id']
+        first_date_str = request.data['first_date']       
+        first_date_obj = datetime.strptime(first_date_str, '%m/%d/%Y')
+        second_date_str = request.data['second_date']
+        second_date_obj = datetime.strptime(second_date_str, '%m/%d/%Y')
+        data = {}
+        list_of_products_to_shop = []
+        
+        products_in_shop = ShopToShop.objects.filter(product_stock_in__phone_model_id=model_id, timestamp__range=[first_date_obj, second_date_obj], shop_to=shop_id)
+          
+        for product in products_in_shop:
+
+            prod_id = product.product_stock_in.id
+            product_onto_shop = ProductStockIn.objects.filter(id=prod_id)
+            
+            product_in_s = serializers.serialize(
+            "json", product_onto_shop)
+            product_str = json.loads(product_in_s)
+            product_ = product_str[0]
+            
+            user_id = product_['fields']['user']
+            phone_type_id = product_['fields']['phone_type']
+            brand_id = product_['fields']['brand']
+            phone_model_id = product_['fields']['phone_model']
+            color_id = product_['fields']['color']
+            storage_id = product_['fields']['storage']
+
+            user_str = serializers.serialize(
+                "json", User.objects.filter(id=user_id), fields=('first_name', 'last_name', 'email'))
+
+            user_json = json.loads(user_str)
+
+            if user_json:
+                product_['fields']['user'] = user_json[0]
+
+            phone_type_str = serializers.serialize(
+                "json", PhoneType.objects.filter(id=phone_type_id))
+            phone_type_json = json.loads(phone_type_str)
+            if phone_type_json:
+                product_['fields']['phone_type'] = phone_type_json[0]
+
+            brand_str = serializers.serialize(
+                "json", Brand.objects.filter(id=brand_id))
+            brand_json = json.loads(brand_str)
+            if brand_json:
+                product_['fields']['brand'] = brand_json[0]
+
+            phone_model_str = serializers.serialize(
+                "json", PhoneModel.objects.filter(id=phone_model_id))
+            phone_model_json = json.loads(phone_model_str)
+            if phone_model_json:
+                product_['fields']['phone_model'] = phone_model_json[0]
+
+            color_str = serializers.serialize(
+                "json", Color.objects.filter(id=color_id))
+            color_json = json.loads(color_str)
+            if color_json:
+                product_['fields']['color'] = color_json[0]
+
+            storage_str = serializers.serialize(
+                "json", Storage.objects.filter(id=storage_id))
+            storage_json = json.loads(storage_str)
+            if storage_json:
+                product_['fields']['storage'] = storage_json[0]
+            product_['fields'].pop('timestamp_out')
+            product_['fields'].pop('timestamp_in')
+            product_['fields'].pop('stock_status')
+            product_['fields'].pop('stock_loc')
+
+            list_of_products_to_shop.append(product_)
+
+        data['list_products_sent_to_shop'] = list_of_products_to_shop
+
+        return Response(data)
+
+
+# Logic of brand, model and products of whether they are received or not
+#retrieving brands that are not being received at a particular shop.
+@api_view(['POST', ])
+@permission_classes((IsAuthenticated,))
+
+def products_not_recieved_by_brand(request):
+    if request.method == 'POST':
+
+        data = {}
+        
+        not_recieved_prdt_by_brand = []
+        shop_id = request.data['shop_id']
+        phone_type_id = request.data['phone_type_id']
+        first_date_str = request.data['first_date']       
+        first_date_obj = datetime.strptime(first_date_str, '%m/%d/%Y')
+        second_date_str = request.data['second_date']
+        second_date_obj = datetime.strptime(second_date_str, '%m/%d/%Y')
+
+        #details of products sent from main stock to shops and not yet recieved by brand
+        products_by_brand_not_recvd = ShopProduct.objects.values('shop_available__shop_name', 'shop_available__id', 'product_stock_in__brand__brand_name', 'product_stock_in__brand__id').annotate(
+            no_prod=Count('product_stock_in')).filter(timestamp__range=[first_date_obj, second_date_obj], product_stock_in__phone_type__id=phone_type_id,shop_available=shop_id, status='MVIN')
+        
+        
+
+        for product in products_by_brand_not_recvd:
+
+            obj = {}
+            obj['brand name'] = product['product_stock_in__brand__brand_name']
+            obj['brand id'] = product['product_stock_in__brand__id']
+            obj['count'] = product['no_prod']
+            obj['shop'] = product['shop_available__shop_name']
+            obj['shop_id'] = product['shop_available__id']
+            not_recieved_prdt_by_brand.append(obj)
+
+            data['products_not_yet_recvd_by_brand'] = not_recieved_prdt_by_brand
+        # else:
+        #     data['info'] = 'User not assigned any position'
+        return Response(data)
+
+
+#retrieving models for a specific brand that are not yet being recieved certain shop.
+@api_view(['POST', ])
+@permission_classes((IsAuthenticated,))
+# @authentication_classes([])
+# @permission_classes([])viewing stock-in product
+def products_not_recieved_by_model(request):
+    if request.method == 'POST':
+
+        data = {}
+        
+        not_received_by_model = []
+        shop_id = request.data['shop_id']
+        brand_id = request.data['brand_id']
+        first_date_str = request.data['first_date']       
+        first_date_obj = datetime.strptime(first_date_str, '%m/%d/%Y')
+        second_date_str = request.data['second_date']
+        second_date_obj = datetime.strptime(second_date_str, '%m/%d/%Y')
+
+        #details of products note received at a particular shop by model
+        products_by_model_not_received = ShopProduct.objects.values('shop_available__shop_name', 'shop_available__id', 'product_stock_in__phone_model__model_name', 'product_stock_in__phone_model__id').annotate(
+            no_prod=Count('product_stock_in')).filter(timestamp__range=[first_date_obj, second_date_obj], product_stock_in__brand__id=brand_id, shop_available=shop_id, status='MVIN')
+        
+        
+
+        for product in products_by_model_not_received:
+
+            obj = {}
+            obj['model name'] = product['product_stock_in__phone_model__model_name']
+            obj['model id'] = product['product_stock_in__phone_model__id']
+            obj['count'] = product['no_prod']
+            obj['shop'] = product['shop_available__shop_name']
+            obj['shop_id'] = product['shop_available__id']
+            not_received_by_model.append(obj)
+
+            data['products_not_recvd_by_model'] = not_received_by_model
+        # else:
+        #     data['info'] = 'User not assigned any position'
+        return Response(data)
+
+
+
+# products details to a particular shop by model that are not yet being received
+@api_view(['POST', ])
+@permission_classes((IsAuthenticated,))
+# @authentication_classes([])
+# @permission_classes([])viewing stock-in product
+def products_not_recieved_list(request):
+    if request.method == 'POST':
+        model_id = request.data['model_id']
+        shop_id = request.data['shop_id']
+        first_date_str = request.data['first_date']       
+        first_date_obj = datetime.strptime(first_date_str, '%m/%d/%Y')
+        second_date_str = request.data['second_date']
+        second_date_obj = datetime.strptime(second_date_str, '%m/%d/%Y')
+        data = {}
+        list_of_products_to_shop = []
+        
+        products_in_shop = ShopProduct.objects.filter(product_stock_in__phone_model_id=model_id, timestamp__range=[first_date_obj, second_date_obj], shop_available=shop_id, status='MVIN')
+          
+        for product in products_in_shop:
+
+            prod_id = product.product_stock_in.id
+            product_onto_shop = ProductStockIn.objects.filter(id=prod_id)
+            
+            product_in_s = serializers.serialize(
+            "json", product_onto_shop)
+            product_str = json.loads(product_in_s)
+            product_ = product_str[0]
+            
+            user_id = product_['fields']['user']
+            phone_type_id = product_['fields']['phone_type']
+            brand_id = product_['fields']['brand']
+            phone_model_id = product_['fields']['phone_model']
+            color_id = product_['fields']['color']
+            storage_id = product_['fields']['storage']
+
+            user_str = serializers.serialize(
+                "json", User.objects.filter(id=user_id), fields=('first_name', 'last_name', 'email'))
+
+            user_json = json.loads(user_str)
+
+            if user_json:
+                product_['fields']['user'] = user_json[0]
+
+            phone_type_str = serializers.serialize(
+                "json", PhoneType.objects.filter(id=phone_type_id))
+            phone_type_json = json.loads(phone_type_str)
+            if phone_type_json:
+                product_['fields']['phone_type'] = phone_type_json[0]
+
+            brand_str = serializers.serialize(
+                "json", Brand.objects.filter(id=brand_id))
+            brand_json = json.loads(brand_str)
+            if brand_json:
+                product_['fields']['brand'] = brand_json[0]
+
+            phone_model_str = serializers.serialize(
+                "json", PhoneModel.objects.filter(id=phone_model_id))
+            phone_model_json = json.loads(phone_model_str)
+            if phone_model_json:
+                product_['fields']['phone_model'] = phone_model_json[0]
+
+            color_str = serializers.serialize(
+                "json", Color.objects.filter(id=color_id))
+            color_json = json.loads(color_str)
+            if color_json:
+                product_['fields']['color'] = color_json[0]
+
+            storage_str = serializers.serialize(
+                "json", Storage.objects.filter(id=storage_id))
+            storage_json = json.loads(storage_str)
+            if storage_json:
+                product_['fields']['storage'] = storage_json[0]
+            product_['fields'].pop('timestamp_out')
+            product_['fields'].pop('timestamp_in')
+            product_['fields'].pop('stock_status')
+            product_['fields'].pop('stock_loc')
+
+            list_of_products_to_shop.append(product_)
+
+        data['list_of_products_not_recieved_of_model'] = list_of_products_to_shop
+
+        return Response(data)
