@@ -1435,17 +1435,14 @@ def products_sent_report_by_type(request):
         first_date_obj = datetime.strptime(first_date_str, '%m/%d/%Y')
         second_date_str = request.data['second_date']
         second_date_obj = datetime.strptime(second_date_str, '%m/%d/%Y')
-
-        print('tell me i wana sloooooooooooooow downnnnnnnnnnnnnn')
+        
         #details of products sent from main stock to shops
         products_by_phone_type_to_shops = ShopToShop.objects.values('shop_to__shop_name', 'shop_to__id', 'product_stock_in__phone_type__type_name', 'product_stock_in__phone_type__id').annotate(
             no_prod=Count('product_stock_in')).filter(timestamp__range=[first_date_obj, second_date_obj], shop_from__shop_no='100')
-        print(products_by_phone_type_to_shops)
+        
         #All products sent to the shops but not yet received
         un_recvd_products_by_phone_type_to_shops = ShopProduct.objects.values('shop_available__shop_name', 'shop_available__id', 'product_stock_in__phone_type__type_name', 'product_stock_in__phone_type__id').annotate(
             no_prod=Count('product_stock_in')).filter(timestamp__range=[first_date_obj, second_date_obj], status='MVIN')
-        print('noooooooot receiveddddddddddd')
-        print(un_recvd_products_by_phone_type_to_shops)
         for product in products_by_phone_type_to_shops:
             obj = {}
             obj['model type name'] = product['product_stock_in__phone_type__type_name']
@@ -1457,15 +1454,13 @@ def products_sent_report_by_type(request):
 
         for product in un_recvd_products_by_phone_type_to_shops:
 
-            obj = {}
-            obj['model type name'] = product['product_stock_in__phone_type__type_name']
-            obj['model type id'] = product['product_stock_in__phone_type__id']
-            obj['count'] = product['no_prod']
-            obj['shop'] = product['shop_available__shop_name']
-            obj['shop_id'] = product['shop_available__id']
-            dispatched_frm_stck_by_phone_type.append(obj)
-
-            dispatched_and_not_received.append(obj)
+            obj1 = {}
+            obj1['model type name'] = product['product_stock_in__phone_type__type_name']
+            obj1['model type id'] = product['product_stock_in__phone_type__id']
+            obj1['count'] = product['no_prod']
+            obj1['shop'] = product['shop_available__shop_name']
+            obj1['shop_id'] = product['shop_available__id']
+            dispatched_and_not_received.append(obj1)
 
             data['products_sent_from_main_stock_bytype'] = dispatched_frm_stck_by_phone_type
             data['product_list_not_received_bytype'] = dispatched_and_not_received
