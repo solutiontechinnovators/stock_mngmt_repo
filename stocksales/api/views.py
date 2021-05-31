@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from stocksales.api.serializers import *
 from django.core import serializers
 import json
-from django.db.models import Count
+from django.db.models import Count, Sum
 from rest_framework.renderers import JSONRenderer
 
 # testing login to return token and user details
@@ -14,6 +14,7 @@ from rest_framework.authtoken.models import Token
 from users.models import User
 from stocksales.models import *
 from datetime import datetime, date
+import secrets
 
 
 @api_view(['POST', ])
@@ -843,46 +844,95 @@ def recieve_product_by_imei(request):
 @permission_classes((IsAuthenticated,))
 def sale_product(request):
     if request.method == 'POST':
-        imei = request.data['imei_no']
-        shop_id = request.data['shop']
-        discount = request.data['discount']
-        # markup = request.data['markup']
-        actual_selling_price = request.data['actual_selling_price']
-        actual_selling_price = int(actual_selling_price)
-        data = {}
+        # creating date and concatenating it to random number
+        today = date.today()
+        random_number = secrets.token_urlsafe(2)
+        invoice_code = str(today) + random_number
+        sale_list = request.data
+        for sale in sale_list:
 
-        shop_product = ShopProduct.objects.filter(
-            product_stock_in__imei_no=imei, shop_available__id=shop_id)
-        if shop_product:
-            for shop_p in shop_product:
-                selling_price = shop_p.product_stock_in.selling_price
-                if actual_selling_price > selling_price:
-                    markup = actual_selling_price - selling_price
+            imei = sale['imei_no']
+            shop_id = sale['shop']
+            discount = sale['discount']
+            name = sale['name']
+            actual_selling_price = sale['actual_selling_price']
+            actual_selling_price = int(actual_selling_price)
+            invoce_no = invoice_code
+            data = {}
+            shop_product = ShopProduct.objects.filter(
+                product_stock_in__imei_no=imei, shop_available__id=shop_id)
+            if shop_product:
+                for shop_p in shop_product:
+                    selling_price = shop_p.product_stock_in.selling_price
+                    if actual_selling_price > selling_price:
+                        markup = actual_selling_price - selling_price
 
-                else:
-                    markup = 0
-                if shop_p.status == 'IN':
-                    sales = Sales(product_stock_in_id=shop_p.product_stock_in.id, shop_id=shop_id,
-                                  discount=discount, markup=markup, actual_selling_price=actual_selling_price)
-                    sales.save()
+                    else:
+                        markup = 0
+                    if shop_p.status == 'IN':
+                        sales = Sales(product_stock_in_id=shop_p.product_stock_in.id, shop_id=shop_id,
+                                    discount=discount, markup=markup, actual_selling_price=actual_selling_price, invoice_no=invoce_no, customer_names = name)
+                        sales.save()
 
-                    # save in the product status
-                    product_id = shop_p.product_stock_in.id
-                    product_status = ShopProductStatus(
-                        product_stock_in_id=product_id, shop_status='SLD', shop_reference_id=shop_id)
-                    product_status.save()
+                        # save in the product status
+                        product_id = shop_p.product_stock_in.id
+                        product_status = ShopProductStatus(
+                            product_stock_in_id=product_id, shop_status='SLD', shop_reference_id=shop_id)
+                        product_status.save()
 
-                    # update shop product
-                    ShopProduct.objects.filter(
-                        product_stock_in__id=product_id, shop_available_id=shop_id).update(status='SLD')
-                    data['response'] = 'product solid'
-                elif shop_p.status == 'SLD':
-                    data['response'] = 'product already solid'
-                else:
-                    data['response'] = 'not in stock'
-        else:
-            data['response'] = 'product not in stock'
+                        # update shop product
+                        ShopProduct.objects.filter(
+                            product_stock_in__id=product_id, shop_available_id=shop_id).update(status='SLD')
+                        
 
+                        data['response'] = 'product solid'
+                    elif shop_p.status == 'SLD':
+                        data['response'] = 'product already solid'
+                        break
+                    else:
+                        data['response'] = 'not in stock'
+            else:
+                data['response'] = 'product not in stock'
+                break
+
+
+
+        invoice_generation_list = []
+        sales_result = Sales.objects.values('product_stock_in__brand__brand_name', 'product_stock_in__brand__id','product_stock_in__phone_model__model_name', 'product_stock_in__phone_model__id', 'customer_names','invoice_no').annotate(
+            count=Count('product_stock_in')).filter(invoice_no=invoice_code)
+
+        for product in sales_result:
+            obj = {}
+            brand_id = product['product_stock_in__brand__id']
+            model_id = product['product_stock_in__phone_model__id']
+            recpt_no = product['invoice_no']
+            obj['brand_name'] = product['product_stock_in__brand__brand_name']
+            obj['brand_id'] = brand_id
+            obj['model_name'] = product['product_stock_in__phone_model__model_name']
+            obj['model_id'] = model_id
+            obj['invoice_no'] = recpt_no
+            obj['customer'] = product['customer_names']
+            count = product['count']
+            print('tubikoreeeeeeeeeeeeeeeeeeeebangbang')
+            print(count)
+            #Finding the total cost incase of buying more products
+            total_price = 0
+            price_per_unit = 0
+            if count > 1:
+                total_cost = Sales.objects.filter(product_stock_in__brand__id=brand_id, product_stock_in__phone_model__id = model_id, invoice_no=recpt_no)
+                for cost in total_cost:
+                    total_prc = cost.product_stock_in.selling_price
+                    price_per_unit = total_prc
+                    total_price = total_price + total_prc
+                obj['price_per_unit'] = price_per_unit
+                obj['total_price'] = total_price
+            else:
+                total_cost = Sales.objects.filter(product_stock_in__brand__id=brand_id, product_stock_in__phone_model__id = model_id, invoice_no=recpt_no)
+                obj['price_per_unit'] = total_cost[0].product_stock_in.selling_price
+                obj['total_price'] = total_cost[0].product_stock_in.selling_price
+            invoice_generation_list.append(obj)
+
+        data['reciept_details'] = invoice_generation_list        
         return Response(data)
 
 

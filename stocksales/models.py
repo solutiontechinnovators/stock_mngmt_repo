@@ -173,6 +173,9 @@ class Sales(models.Model):
     markup = models.IntegerField(default=0)
     actual_selling_price = models.FloatField(max_length=20)
     timestamp = models.DateField(auto_now_add=True)
+    invoice_no = models.CharField(max_length=20)
+    customer_names = models.CharField(max_length=100)
+    
 
     def __str__(self):
         return self.actual_selling_price
