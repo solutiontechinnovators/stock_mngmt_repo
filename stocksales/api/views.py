@@ -900,6 +900,7 @@ def sale_product(request):
         invoice_generation_list = []
         sales_result = Sales.objects.values('product_stock_in__brand__brand_name', 'product_stock_in__brand__id','product_stock_in__phone_model__model_name', 'product_stock_in__phone_model__id', 'customer_names','invoice_no').annotate(
             count=Count('product_stock_in')).filter(invoice_no=invoice_code)
+        
 
         for product in sales_result:
             obj = {}
@@ -913,23 +914,22 @@ def sale_product(request):
             obj['invoice_no'] = recpt_no
             obj['customer'] = product['customer_names']
             count = product['count']
-            print('tubikoreeeeeeeeeeeeeeeeeeeebangbang')
-            print(count)
+            
             #Finding the total cost incase of buying more products
             total_price = 0
             price_per_unit = 0
             if count > 1:
                 total_cost = Sales.objects.filter(product_stock_in__brand__id=brand_id, product_stock_in__phone_model__id = model_id, invoice_no=recpt_no)
                 for cost in total_cost:
-                    total_prc = cost.product_stock_in.selling_price
+                    total_prc = cost.actual_selling_price
                     price_per_unit = total_prc
                     total_price = total_price + total_prc
                 obj['price_per_unit'] = price_per_unit
                 obj['total_price'] = total_price
             else:
                 total_cost = Sales.objects.filter(product_stock_in__brand__id=brand_id, product_stock_in__phone_model__id = model_id, invoice_no=recpt_no)
-                obj['price_per_unit'] = total_cost[0].product_stock_in.selling_price
-                obj['total_price'] = total_cost[0].product_stock_in.selling_price
+                obj['price_per_unit'] = total_cost[0].actual_selling_price
+                obj['total_price'] = total_cost[0].actual_selling_price
             invoice_generation_list.append(obj)
 
         data['reciept_details'] = invoice_generation_list        
