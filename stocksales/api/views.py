@@ -914,6 +914,7 @@ def sale_product(request):
             obj['invoice_no'] = recpt_no
             obj['customer'] = product['customer_names']
             count = product['count']
+            obj['count'] = count
             
             #Finding the total cost incase of buying more products
             total_price = 0
