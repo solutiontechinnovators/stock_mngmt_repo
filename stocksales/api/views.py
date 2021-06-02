@@ -1491,6 +1491,8 @@ def products_sent_report_by_type(request):
         products_by_phone_type_to_shops = ShopToShop.objects.values('shop_to__shop_name', 'shop_to__id', 'product_stock_in__phone_type__type_name', 'product_stock_in__phone_type__id').annotate(
             no_prod=Count('product_stock_in')).filter(timestamp__range=[first_date_obj, second_date_obj], shop_from__shop_no=100)
         
+        print('youuuuusssssssssssssss')
+        print(products_by_phone_type_to_shops)
         #All products sent to the shops but not yet received
         un_recvd_products_by_phone_type_to_shops = ShopProduct.objects.values('shop_available__shop_name', 'shop_available__id', 'product_stock_in__phone_type__type_name', 'product_stock_in__phone_type__id').annotate(
             no_prod=Count('product_stock_in')).filter(timestamp__range=[first_date_obj, second_date_obj], status='MVIN')
