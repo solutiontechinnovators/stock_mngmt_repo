@@ -1514,6 +1514,8 @@ def products_sent_report_by_type(request):
             obj1['shop_id'] = product['shop_available__id']
             dispatched_and_not_received.append(obj1)
 
+        print('crazyzzzzzzzzzzzzzzz')
+        print(dispatched_frm_stck_by_phone_type)
         data['products_sent_from_main_stock_bytype'] = dispatched_frm_stck_by_phone_type
         data['product_list_not_received_bytype'] = dispatched_and_not_received
         # else:
