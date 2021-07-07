@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'adminstration',
     'Common',
     'stocksales',
+    'django_crontab',
 
     
 ]
@@ -174,6 +175,10 @@ MESSAGE_TAGS = {
     messages.WARNING: 'alert-warning',
     messages.ERROR: 'alert-danger',
 }
+
+CRONJOBS= [
+    ('*/1 * * * *', 'adminstration.cron.testcron')
+]
 
 try:
     from .local_settings import *
