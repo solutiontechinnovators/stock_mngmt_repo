@@ -76,5 +76,9 @@ urlpatterns = [
           name='products_not_recieved_by_model'),
      path('products_not_recieved_list', views.products_not_recieved_list,
           name='products_not_recieved_list'),
+     path('get_sale_product_by_type_date', views.get_sale_product_by_type_date,
+          name='get_sale_product_by_type_date'),
+     path('get_sale_product_by_model_date', views.get_sale_product_by_model_date,
+          name='get_sale_product_by_model_date'),
      ]
 

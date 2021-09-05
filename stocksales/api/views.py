@@ -140,12 +140,12 @@ def product_stock_in(request):
     if request.method == 'POST':
         posted_data = request.data
         imei_lists = posted_data['imei_no']
-        
+
         for imei in imei_lists:
             posted_data['imei_no'] = imei
             serializer = ProductStockInSerializer(data=posted_data)
             data = {}
-            
+
             if serializer.is_valid():
                 user = request.user
                 location = Shop.objects.filter(shop_no=100)
@@ -711,7 +711,6 @@ def get_shop_product(request):
         shp_assn = UserShopAssignment.objects.filter(
             user=usr, assignment_status='Active')
 
-        
         products_by_phone_typ = ShopProduct.objects.values('shop_available__shop_name', 'shop_available__id', 'product_stock_in__phone_type__type_name', 'product_stock_in__phone_type__id').annotate(
             no_prod=Count('product_stock_in')).filter(shop_available_id=shop_id, status='IN')
         # phones count by Brand
@@ -871,7 +870,7 @@ def sale_product(request):
                         markup = 0
                     if shop_p.status == 'IN':
                         sales = Sales(product_stock_in_id=shop_p.product_stock_in.id, shop_id=shop_id,
-                                    discount=discount, markup=markup, actual_selling_price=actual_selling_price, invoice_no=invoce_no, customer_names = name)
+                                      discount=discount, markup=markup, actual_selling_price=actual_selling_price, invoice_no=invoce_no, customer_names=name)
                         sales.save()
 
                         # save in the product status
@@ -883,7 +882,6 @@ def sale_product(request):
                         # update shop product
                         ShopProduct.objects.filter(
                             product_stock_in__id=product_id, shop_available_id=shop_id).update(status='SLD')
-                        
 
                         data['response'] = 'product solid'
                     elif shop_p.status == 'SLD':
@@ -895,12 +893,9 @@ def sale_product(request):
                 data['response'] = 'product not in stock'
                 break
 
-
-
         invoice_generation_list = []
-        sales_result = Sales.objects.values('product_stock_in__brand__brand_name', 'product_stock_in__brand__id','product_stock_in__phone_model__model_name', 'product_stock_in__phone_model__id', 'customer_names','invoice_no').annotate(
+        sales_result = Sales.objects.values('product_stock_in__brand__brand_name', 'product_stock_in__brand__id', 'product_stock_in__phone_model__model_name', 'product_stock_in__phone_model__id', 'customer_names', 'invoice_no').annotate(
             count=Count('product_stock_in')).filter(invoice_no=invoice_code)
-        
 
         for product in sales_result:
             obj = {}
@@ -915,12 +910,13 @@ def sale_product(request):
             obj['customer'] = product['customer_names']
             count = product['count']
             obj['count'] = count
-            
-            #Finding the total cost incase of buying more products
+
+            # Finding the total cost incase of buying more products
             total_price = 0
             price_per_unit = 0
             if count > 1:
-                total_cost = Sales.objects.filter(product_stock_in__brand__id=brand_id, product_stock_in__phone_model__id = model_id, invoice_no=recpt_no)
+                total_cost = Sales.objects.filter(
+                    product_stock_in__brand__id=brand_id, product_stock_in__phone_model__id=model_id, invoice_no=recpt_no)
                 for cost in total_cost:
                     total_prc = cost.actual_selling_price
                     price_per_unit = total_prc
@@ -928,12 +924,13 @@ def sale_product(request):
                 obj['price_per_unit'] = price_per_unit
                 obj['total_price'] = total_price
             else:
-                total_cost = Sales.objects.filter(product_stock_in__brand__id=brand_id, product_stock_in__phone_model__id = model_id, invoice_no=recpt_no)
+                total_cost = Sales.objects.filter(
+                    product_stock_in__brand__id=brand_id, product_stock_in__phone_model__id=model_id, invoice_no=recpt_no)
                 obj['price_per_unit'] = total_cost[0].actual_selling_price
                 obj['total_price'] = total_cost[0].actual_selling_price
             invoice_generation_list.append(obj)
 
-        data['reciept_details'] = invoice_generation_list        
+        data['reciept_details'] = invoice_generation_list
         return Response(data)
 
 
@@ -1263,8 +1260,8 @@ def get_list_details(request):
 
 
 # retrieving stock details by type and brand depending on the dates passed.
-# the logic here, is that we pass the shop id, if it's the main stock, based on the 
-# timestamp in and timestamp out, we give the response of the products entered and 
+# the logic here, is that we pass the shop id, if it's the main stock, based on the
+# timestamp in and timestamp out, we give the response of the products entered and
 # those that were outed in the range of the date.
 # if the it's shop, then we retrive 3 scenarios, the products not recieved if any,
 # products received, products solid and those moved if any in that time range.
@@ -1272,20 +1269,20 @@ def get_list_details(request):
 @permission_classes((IsAuthenticated,))
 def stock_dtls_by_date(request):
     if request.method == 'POST':
-        first_date_str = request.data['first_date']       
+        first_date_str = request.data['first_date']
         first_date_obj = datetime.strptime(first_date_str, '%m/%d/%Y')
         second_date_str = request.data['second_date']
         second_date_obj = datetime.strptime(second_date_str, '%m/%d/%Y')
         shop_id = request.data['shop_id']
         data = {}
-        
+
         products_type_count_in = []
         smartphone_brand_count_in = []
         products_type_count_out = []
         smartphone_brand_count_out = []
         usr = request.user
         today = date.today()
-        #first check which shop(if it's main stock, then we query the ProductStockIn else we query the ShopProduct model)
+        # first check which shop(if it's main stock, then we query the ProductStockIn else we query the ShopProduct model)
         shop = Shop.objects.get(id=shop_id)
         shop_no = shop.shop_no
         if shop_no == 100:
@@ -1353,15 +1350,15 @@ def stock_dtls_by_date(request):
 def get_stock_in_out_by_brand_by_date(request):
     if request.method == 'POST':
         id = request.data['brand_id']
-        first_date_str = request.data['first_date']       
+        first_date_str = request.data['first_date']
         first_date_obj = datetime.strptime(first_date_str, '%m/%d/%Y')
         second_date_str = request.data['second_date']
         second_date_obj = datetime.strptime(second_date_str, '%m/%d/%Y')
         data = {}
         products_in_count = []
         products_out_count = []
-        
-        #retrieving stock models in on a specific date by brand
+
+        # retrieving stock models in on a specific date by brand
         model_typ = ProductStockIn.objects.values('phone_model__model_name', 'phone_model__id').annotate(
             no_count=Count('id')).filter(brand_id=id, timestamp_in__range=[first_date_obj, second_date_obj])
 
@@ -1397,7 +1394,7 @@ def get_stock_in_out_by_brand_by_date(request):
 def products_in_out_by_model_by_date(request):
     if request.method == 'POST':
         model_id = request.data['model_id']
-        first_date_str = request.data['first_date']       
+        first_date_str = request.data['first_date']
         first_date_obj = datetime.strptime(first_date_str, '%m/%d/%Y')
         second_date_str = request.data['second_date']
         second_date_obj = datetime.strptime(second_date_str, '%m/%d/%Y')
@@ -1405,9 +1402,11 @@ def products_in_out_by_model_by_date(request):
         data = {}
         if status == 'in':
 
-            product_stck_in = ProductStockIn.objects.filter(phone_model_id=model_id, timestamp_in__range=[first_date_obj, second_date_obj], stock_status='in')
+            product_stck_in = ProductStockIn.objects.filter(phone_model_id=model_id, timestamp_in__range=[
+                                                            first_date_obj, second_date_obj], stock_status='in')
         else:
-            product_stck_in = ProductStockIn.objects.filter(phone_model_id=model_id, timestamp_in__range=[first_date_obj, second_date_obj], stock_status='out')
+            product_stck_in = ProductStockIn.objects.filter(phone_model_id=model_id, timestamp_in__range=[
+                                                            first_date_obj, second_date_obj], stock_status='out')
         product_in_s = serializers.serialize(
             "json", product_stck_in)
 
@@ -1477,22 +1476,21 @@ def products_sent_report_by_type(request):
     if request.method == 'POST':
 
         data = {}
-        
+
         dispatched_frm_stck_by_phone_type = []
         dispatched_and_not_received = []
-         
+
         usr = request.user
-        first_date_str = request.data['first_date']       
+        first_date_str = request.data['first_date']
         first_date_obj = datetime.strptime(first_date_str, '%m/%d/%Y')
         second_date_str = request.data['second_date']
         second_date_obj = datetime.strptime(second_date_str, '%m/%d/%Y')
-        
-        #details of products sent from main stock to shops
+
+        # details of products sent from main stock to shops
         products_by_phone_type_to_shops = ShopToShop.objects.values('shop_to__shop_name', 'shop_to__id', 'product_stock_in__phone_type__type_name', 'product_stock_in__phone_type__id').annotate(
             no_prod=Count('product_stock_in')).filter(timestamp__range=[first_date_obj, second_date_obj], shop_from__shop_no=100)
-        
-        
-        #All products sent to the shops but not yet received
+
+        # All products sent to the shops but not yet received
         un_recvd_products_by_phone_type_to_shops = ShopProduct.objects.values('shop_available__shop_name', 'shop_available__id', 'product_stock_in__phone_type__type_name', 'product_stock_in__phone_type__id').annotate(
             no_prod=Count('product_stock_in')).filter(timestamp__range=[first_date_obj, second_date_obj], status='MVIN')
         for product in products_by_phone_type_to_shops:
@@ -1514,16 +1512,12 @@ def products_sent_report_by_type(request):
             obj1['shop_id'] = product['shop_available__id']
             dispatched_and_not_received.append(obj1)
 
-        print('crazyzzzzzzzzzzzzzzz')
-        print(dispatched_frm_stck_by_phone_type)
         data['products_sent_from_main_stock_bytype'] = dispatched_frm_stck_by_phone_type
         data['product_list_not_received_bytype'] = dispatched_and_not_received
-        # else:
-        #     data['info'] = 'User not assigned any position'
         return Response(data)
 
 
-#retrieving brands that are being moved to a certain shop.
+# retrieving brands that are being moved to a certain shop.
 @api_view(['POST', ])
 @permission_classes((IsAuthenticated,))
 # @authentication_classes([])
@@ -1532,20 +1526,18 @@ def products_sent_report_by_brand(request):
     if request.method == 'POST':
 
         data = {}
-        
+
         dispatched_frm_stck_by_brand = []
         shop_id = request.data['shop_id']
         phone_type_id = request.data['phone_type_id']
-        first_date_str = request.data['first_date']       
+        first_date_str = request.data['first_date']
         first_date_obj = datetime.strptime(first_date_str, '%m/%d/%Y')
         second_date_str = request.data['second_date']
         second_date_obj = datetime.strptime(second_date_str, '%m/%d/%Y')
 
-        #details of products sent from main stock to shops by brand
+        # details of products sent from main stock to shops by brand
         products_by_brand_to_shops = ShopToShop.objects.values('shop_to__shop_name', 'shop_to__id', 'product_stock_in__brand__brand_name', 'product_stock_in__brand__id').annotate(
-            no_prod=Count('product_stock_in')).filter(timestamp__range=[first_date_obj, second_date_obj], shop_from__shop_no='100', product_stock_in__phone_type__id=phone_type_id,shop_to=shop_id)
-        
-        
+            no_prod=Count('product_stock_in')).filter(timestamp__range=[first_date_obj, second_date_obj], shop_from__shop_no='100', product_stock_in__phone_type__id=phone_type_id, shop_to=shop_id)
 
         for product in products_by_brand_to_shops:
 
@@ -1563,7 +1555,7 @@ def products_sent_report_by_brand(request):
         return Response(data)
 
 
-#retrieving models for a specific brand that are being moved to a certain shop.
+# retrieving models for a specific brand that are being moved to a certain shop.
 @api_view(['POST', ])
 @permission_classes((IsAuthenticated,))
 # @authentication_classes([])
@@ -1572,20 +1564,18 @@ def products_sent_report_by_model(request):
     if request.method == 'POST':
 
         data = {}
-        
+
         dispatched_frm_stck_by_model = []
         shop_id = request.data['shop_id']
         brand_id = request.data['brand_id']
-        first_date_str = request.data['first_date']       
+        first_date_str = request.data['first_date']
         first_date_obj = datetime.strptime(first_date_str, '%m/%d/%Y')
         second_date_str = request.data['second_date']
         second_date_obj = datetime.strptime(second_date_str, '%m/%d/%Y')
 
-        #details of products sent from main stock to shops
+        # details of products sent from main stock to shops
         products_by_model_to_shops = ShopToShop.objects.values('shop_to__shop_name', 'shop_to__id', 'product_stock_in__phone_model__model_name', 'product_stock_in__phone_model__id').annotate(
             no_prod=Count('product_stock_in')).filter(timestamp__range=[first_date_obj, second_date_obj], shop_from__shop_no='100', product_stock_in__brand__id=brand_id, shop_to=shop_id)
-        
-        
 
         for product in products_by_model_to_shops:
 
@@ -1603,8 +1593,7 @@ def products_sent_report_by_model(request):
         return Response(data)
 
 
-
-# All product details to a particular shop by model in a given date range 
+# All product details to a particular shop by model in a given date range
 @api_view(['POST', ])
 @permission_classes((IsAuthenticated,))
 # @authentication_classes([])
@@ -1613,25 +1602,26 @@ def products_to_shop_in_given_range(request):
     if request.method == 'POST':
         model_id = request.data['model_id']
         shop_id = request.data['shop_id']
-        first_date_str = request.data['first_date']       
+        first_date_str = request.data['first_date']
         first_date_obj = datetime.strptime(first_date_str, '%m/%d/%Y')
         second_date_str = request.data['second_date']
         second_date_obj = datetime.strptime(second_date_str, '%m/%d/%Y')
         data = {}
         list_of_products_to_shop = []
-        
-        products_in_shop = ShopToShop.objects.filter(product_stock_in__phone_model_id=model_id, timestamp__range=[first_date_obj, second_date_obj], shop_to=shop_id)
-          
+
+        products_in_shop = ShopToShop.objects.filter(product_stock_in__phone_model_id=model_id, timestamp__range=[
+                                                     first_date_obj, second_date_obj], shop_to=shop_id)
+
         for product in products_in_shop:
 
             prod_id = product.product_stock_in.id
             product_onto_shop = ProductStockIn.objects.filter(id=prod_id)
-            
+
             product_in_s = serializers.serialize(
-            "json", product_onto_shop)
+                "json", product_onto_shop)
             product_str = json.loads(product_in_s)
             product_ = product_str[0]
-            
+
             user_id = product_['fields']['user']
             phone_type_id = product_['fields']['phone_type']
             brand_id = product_['fields']['brand']
@@ -1689,28 +1679,25 @@ def products_to_shop_in_given_range(request):
 
 
 # Logic of brand, model and products of whether they are received or not
-#retrieving brands that are not being received at a particular shop.
+# retrieving brands that are not being received at a particular shop.
 @api_view(['POST', ])
 @permission_classes((IsAuthenticated,))
-
 def products_not_recieved_by_brand(request):
     if request.method == 'POST':
 
         data = {}
-        
+
         not_recieved_prdt_by_brand = []
         shop_id = request.data['shop_id']
         phone_type_id = request.data['phone_type_id']
-        first_date_str = request.data['first_date']       
+        first_date_str = request.data['first_date']
         first_date_obj = datetime.strptime(first_date_str, '%m/%d/%Y')
         second_date_str = request.data['second_date']
         second_date_obj = datetime.strptime(second_date_str, '%m/%d/%Y')
 
-        #details of products sent from main stock to shops and not yet recieved by brand
+        # details of products sent from main stock to shops and not yet recieved by brand
         products_by_brand_not_recvd = ShopProduct.objects.values('shop_available__shop_name', 'shop_available__id', 'product_stock_in__brand__brand_name', 'product_stock_in__brand__id', 'product_stock_in__buying_price').annotate(
-            no_prod=Count('product_stock_in')).filter(timestamp__range=[first_date_obj, second_date_obj], product_stock_in__phone_type__id=phone_type_id,shop_available=shop_id, status='MVIN')
-        
-        
+            no_prod=Count('product_stock_in')).filter(timestamp__range=[first_date_obj, second_date_obj], product_stock_in__phone_type__id=phone_type_id, shop_available=shop_id, status='MVIN')
 
         for product in products_by_brand_not_recvd:
 
@@ -1729,7 +1716,7 @@ def products_not_recieved_by_brand(request):
         return Response(data)
 
 
-#retrieving models for a specific brand that are not yet being recieved certain shop.
+# retrieving models for a specific brand that are not yet being recieved certain shop.
 @api_view(['POST', ])
 @permission_classes((IsAuthenticated,))
 # @authentication_classes([])
@@ -1738,20 +1725,18 @@ def products_not_recieved_by_model(request):
     if request.method == 'POST':
 
         data = {}
-        
+
         not_received_by_model = []
         shop_id = request.data['shop_id']
         brand_id = request.data['brand_id']
-        first_date_str = request.data['first_date']       
+        first_date_str = request.data['first_date']
         first_date_obj = datetime.strptime(first_date_str, '%m/%d/%Y')
         second_date_str = request.data['second_date']
         second_date_obj = datetime.strptime(second_date_str, '%m/%d/%Y')
 
-        #details of products note received at a particular shop by model
+        # details of products note received at a particular shop by model
         products_by_model_not_received = ShopProduct.objects.values('shop_available__shop_name', 'shop_available__id', 'product_stock_in__phone_model__model_name', 'product_stock_in__phone_model__id').annotate(
             no_prod=Count('product_stock_in')).filter(timestamp__range=[first_date_obj, second_date_obj], product_stock_in__brand__id=brand_id, shop_available=shop_id, status='MVIN')
-        
-        
 
         for product in products_by_model_not_received:
 
@@ -1769,7 +1754,6 @@ def products_not_recieved_by_model(request):
         return Response(data)
 
 
-
 # products details to a particular shop by model that are not yet being received
 @api_view(['POST', ])
 @permission_classes((IsAuthenticated,))
@@ -1779,25 +1763,26 @@ def products_not_recieved_list(request):
     if request.method == 'POST':
         model_id = request.data['model_id']
         shop_id = request.data['shop_id']
-        first_date_str = request.data['first_date']       
+        first_date_str = request.data['first_date']
         first_date_obj = datetime.strptime(first_date_str, '%m/%d/%Y')
         second_date_str = request.data['second_date']
         second_date_obj = datetime.strptime(second_date_str, '%m/%d/%Y')
         data = {}
         list_of_products_to_shop = []
-        
-        products_in_shop = ShopProduct.objects.filter(product_stock_in__phone_model_id=model_id, timestamp__range=[first_date_obj, second_date_obj], shop_available=shop_id, status='MVIN')
-          
+
+        products_in_shop = ShopProduct.objects.filter(product_stock_in__phone_model_id=model_id, timestamp__range=[
+                                                      first_date_obj, second_date_obj], shop_available=shop_id, status='MVIN')
+
         for product in products_in_shop:
 
             prod_id = product.product_stock_in.id
             product_onto_shop = ProductStockIn.objects.filter(id=prod_id)
-            
+
             product_in_s = serializers.serialize(
-            "json", product_onto_shop)
+                "json", product_onto_shop)
             product_str = json.loads(product_in_s)
             product_ = product_str[0]
-            
+
             user_id = product_['fields']['user']
             phone_type_id = product_['fields']['phone_type']
             brand_id = product_['fields']['brand']
@@ -1852,3 +1837,222 @@ def products_not_recieved_list(request):
         data['list_of_products_not_recieved_of_model'] = list_of_products_to_shop
 
         return Response(data)
+
+# ========================================================
+# Retrieving sales by date and by invoice below
+
+# Sale Products details by brand and phone type by date
+@api_view(['POST', ])
+@permission_classes((IsAuthenticated,))
+def get_sale_product_by_type_date(request):
+    if request.method == 'POST':
+
+        data = {}
+        products_total_sales_count = []
+        products_type_count = []
+        smartphone_brand_count = []
+        smartphone_model_count = []
+        shop_id = request.data['shop_id']
+        first_date_str = request.data['first_date']
+        first_date_obj = datetime.strptime(first_date_str, '%m/%d/%Y')
+        second_date_str = request.data['second_date']
+        second_date_obj = datetime.strptime(second_date_str, '%m/%d/%Y')
+
+
+        #  object for total sales and count by date
+        total_sales_by_day = Sales.objects.filter(shop_id=shop_id, timestamp__range=[first_date_obj, second_date_obj]).aggregate(total_sales = Sum('actual_selling_price'))
+        total_prdt_count_by_day = Sales.objects.filter(shop_id=shop_id, timestamp__range=[first_date_obj, second_date_obj]).aggregate(total_Count = Count('product_stock_in'))
+        
+        
+        obje = {}
+        obje['total_count'] = total_prdt_count_by_day['total_Count']
+        obje['total_sales'] = total_sales_by_day['total_sales']
+        products_total_sales_count.append(obje)
+        
+        data['total_sales_of_the_dates'] = products_total_sales_count
+
+        # phones count by phone type in the sales
+        products_by_phone_typ_by_date = Sales.objects.values('product_stock_in__phone_type__type_name', 'product_stock_in__phone_type__id').annotate(
+            sale_count=Count('product_stock_in')).filter(shop_id=shop_id, timestamp__range=[first_date_obj, second_date_obj])
+
+        
+        total_price_type = 0
+        for product in products_by_phone_typ_by_date:
+            obj = {}
+            s_count = product['sale_count']
+            type_id = product['product_stock_in__phone_type__id']
+            obj['type_name'] = product['product_stock_in__phone_type__type_name']
+            obj['type_id'] = type_id
+            obj['count'] = s_count
+
+
+            # calculating individual type prices.
+            products_by_phone_typ = Sales.objects.filter(shop_id=shop_id, timestamp__range=[
+                                                         first_date_obj, second_date_obj], product_stock_in__phone_type__id=type_id)
+            size = len(products_by_phone_typ)
+
+            
+            total_price_type = 0
+            if size > 0:
+                for sale_product in products_by_phone_typ:
+                    a_selling_price = sale_product.actual_selling_price
+                    total_price_type = total_price_type + a_selling_price
+                obj['total_amount_for_type'] = total_price_type
+            else:
+                a_selling_price = products_by_phone_typ[0].actual_selling_price
+                total_price_type = total_price_type + a_selling_price
+                obj['total_amount_for_type'] = total_price_type
+            products_type_count.append(obj)
+
+        data['sales by type and date'] = products_type_count
+    
+        
+
+        # phones count by brand in the sales
+        prds_by_brand_typ_by_date = Sales.objects.values('product_stock_in__brand__brand_name', 'product_stock_in__brand__id', 'product_stock_in__brand__phone_type__id').annotate(sale_count=Count(
+            'product_stock_in')).filter(shop_id=shop_id, timestamp__range=[first_date_obj, second_date_obj])
+
+        for product in prds_by_brand_typ_by_date:
+            obj = {}
+            s_count = product['sale_count']
+            brand_id = product['product_stock_in__brand__id']
+            obj['brand_name'] = product['product_stock_in__brand__brand_name']
+            obj['brand_id'] = brand_id
+            obj['type_id'] = product['product_stock_in__brand__phone_type__id']
+            obj['count'] = s_count
+
+            products_sales_by_brand = Sales.objects.filter(shop_id=shop_id, timestamp__range=[
+                                                         first_date_obj, second_date_obj], product_stock_in__brand__id=brand_id)
+            size = len(products_sales_by_brand)
+
+            total_price_type = 0
+            if size > 0:
+                for sale_product in products_sales_by_brand:
+                    a_selling_price = sale_product.actual_selling_price
+                    total_price_type = total_price_type + a_selling_price
+                obj['total_amount_for_brand'] = total_price_type
+            else:
+                a_selling_price = products_sales_by_brand[0].actual_selling_price
+                total_price_type = total_price_type + a_selling_price
+                obj['total_amount_for_brand'] = total_price_type
+            smartphone_brand_count.append(obj)
+
+        data['sales_by_Brand_and_date'] = smartphone_brand_count
+
+        # phones count by model in the sales
+        prds_by_model_typ_by_date = Sales.objects.values('product_stock_in__phone_model__model_name', 'product_stock_in__phone_model__id', 'product_stock_in__phone_model__phone_type__id', 'product_stock_in__phone_model__brand__id').annotate(sale_count=Count(
+            'product_stock_in')).filter(shop_id=shop_id, timestamp__range=[first_date_obj, second_date_obj])
+
+        for product in prds_by_model_typ_by_date:
+            obj = {}
+            s_count = product['sale_count']
+            model_id = product['product_stock_in__phone_model__id']
+            obj['model_id'] = model_id
+            obj['model_name'] = product['product_stock_in__phone_model__model_name']
+            obj['brand_id'] = product['product_stock_in__phone_model__brand__id']
+            obj['type_id'] = product['product_stock_in__phone_model__phone_type__id']
+            
+            obj['count'] = s_count
+
+            products_sales_by_model = Sales.objects.filter(shop_id=shop_id, timestamp__range=[
+                                                         first_date_obj, second_date_obj], product_stock_in__phone_model__id=model_id)
+            size = len(products_sales_by_model)
+
+            total_price_type = 0
+            if size > 0:
+                for sale_product in products_sales_by_model:
+                    a_selling_price = sale_product.actual_selling_price
+                    total_price_type = total_price_type + a_selling_price
+                obj['total_amount_for_model'] = total_price_type
+            else:
+                a_selling_price = products_sales_by_brand[0].actual_selling_price
+                total_price_type = total_price_type + a_selling_price
+                obj['total_amount_for_model'] = total_price_type
+            smartphone_model_count.append(obj)
+
+        data['sales_by_Model_and_date'] = smartphone_model_count
+
+        return Response(data)
+
+
+# Sale Products details by brand  by date
+@api_view(['POST', ])
+@permission_classes((IsAuthenticated,))
+def get_sale_product_by_model_date(request):
+    if request.method == 'POST':
+
+        data = {}
+        product_solid = []
+        shop_id = request.data['shop_id']
+        model_id = request.data['model_id']
+        first_date_str = request.data['first_date']
+        first_date_obj = datetime.strptime(first_date_str, '%m/%d/%Y')
+        second_date_str = request.data['second_date']
+        second_date_obj = datetime.strptime(second_date_str, '%m/%d/%Y')
+
+        # phones count by phone type in the sales
+        prds_by_model_typ_by_date = Sales.objects.filter(shop_id=shop_id, timestamp__range=[first_date_obj, second_date_obj], product_stock_in__phone_model__id=model_id)
+
+        for product in prds_by_model_typ_by_date:
+            obj = {}
+            
+            obj['brand_name'] = product.product_stock_in.brand.brand_name
+            obj['model_name'] = product.product_stock_in.phone_model.model_name
+            obj['initial_selling_price'] = product.product_stock_in.selling_price
+            obj['actual_selling_price'] = product.actual_selling_price
+
+            
+            product_solid.append(obj)
+
+        data['product_solid'] = product_solid
+
+        return Response(data)
+
+
+# Sale Products details by model and brand as input  by date
+# @api_view(['POST', ])
+# @permission_classes((IsAuthenticated,))
+# def get_sale_product_by_model_date(request):
+#     if request.method == 'POST':
+
+#         data = {}
+#         products_type_count = []
+#         smartphone_brand_count = []
+#         shop_id = request.data['shop_id']
+#         brand_id = request.data['brand_id']
+#         first_date_str = request.data['first_date']
+#         first_date_obj = datetime.strptime(first_date_str, '%m/%d/%Y')
+#         second_date_str = request.data['second_date']
+#         second_date_obj = datetime.strptime(second_date_str, '%m/%d/%Y')
+
+#         # phones count by phone type in the sales
+#         prds_by_model_by_date = Sales.objects.values('product_stock_in__phone_model__model_name', 'product_stock_in__phone_model__id').annotate(sale_count=Count(
+#             'product_stock_in')).filter(shop_id=shop_id, timestamp__range=[first_date_obj, second_date_obj], product_stock_in__phone_model__brand__id=brand_id)
+
+#         for product in prds_by_model_by_date:
+#             obj = {}
+#             s_count = product['sale_count']
+#             model_id = product['product_stock_in__phone_model__id']
+#             obj['model name'] = product['product_stock_in__phone_model__model_name']
+#             obj['model id'] = model_id
+#             obj['count'] = s_count
+
+#             products_by_model = Sales.objects.filter(shop_id=shop_id, timestamp__range=[
+#                                                      first_date_obj, second_date_obj], product_stock_in__brand__phone_type__id=type_id)
+#             size = len(products_by_model)
+
+#             total_price_type = 0
+#             if size > 0:
+#                 for sale_product in products_by_phone_typ:
+#                     a_selling_price = sale_product.actual_selling_price
+#                     total_price_type = total_price_type + a_selling_price
+#                 obj['total_amount_for_type'] = total_price_type
+#             else:
+#                 a_selling_price = products_by_phone_typ[0].actual_selling_price
+#                 total_price_type = total_price_type + a_selling_price
+#                 obj['total_amount_for_type'] = total_price_type
+#             products_type_count.append(obj)
+
+#         data['sales by type and date'] = products_type_count
+
+#         return Response(data)
