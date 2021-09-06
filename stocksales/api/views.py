@@ -1858,24 +1858,23 @@ def get_sale_product_by_type_date(request):
         second_date_str = request.data['second_date']
         second_date_obj = datetime.strptime(second_date_str, '%m/%d/%Y')
 
-
         #  object for total sales and count by date
-        total_sales_by_day = Sales.objects.filter(shop_id=shop_id, timestamp__range=[first_date_obj, second_date_obj]).aggregate(total_sales = Sum('actual_selling_price'))
-        total_prdt_count_by_day = Sales.objects.filter(shop_id=shop_id, timestamp__range=[first_date_obj, second_date_obj]).aggregate(total_Count = Count('product_stock_in'))
-        
-        
+        total_sales_by_day = Sales.objects.filter(shop_id=shop_id, timestamp__range=[
+                                                  first_date_obj, second_date_obj]).aggregate(total_sales=Sum('actual_selling_price'))
+        total_prdt_count_by_day = Sales.objects.filter(shop_id=shop_id, timestamp__range=[
+                                                       first_date_obj, second_date_obj]).aggregate(total_Count=Count('product_stock_in'))
+
         obje = {}
         obje['total_count'] = total_prdt_count_by_day['total_Count']
         obje['total_sales'] = total_sales_by_day['total_sales']
         products_total_sales_count.append(obje)
-        
+
         data['total_sales_of_the_dates'] = products_total_sales_count
 
         # phones count by phone type in the sales
         products_by_phone_typ_by_date = Sales.objects.values('product_stock_in__phone_type__type_name', 'product_stock_in__phone_type__id').annotate(
             sale_count=Count('product_stock_in')).filter(shop_id=shop_id, timestamp__range=[first_date_obj, second_date_obj])
 
-        
         total_price_type = 0
         for product in products_by_phone_typ_by_date:
             obj = {}
@@ -1885,13 +1884,11 @@ def get_sale_product_by_type_date(request):
             obj['type_id'] = type_id
             obj['count'] = s_count
 
-
             # calculating individual type prices.
             products_by_phone_typ = Sales.objects.filter(shop_id=shop_id, timestamp__range=[
                                                          first_date_obj, second_date_obj], product_stock_in__phone_type__id=type_id)
             size = len(products_by_phone_typ)
 
-            
             total_price_type = 0
             if size > 0:
                 for sale_product in products_by_phone_typ:
@@ -1905,8 +1902,6 @@ def get_sale_product_by_type_date(request):
             products_type_count.append(obj)
 
         data['sales by type and date'] = products_type_count
-    
-        
 
         # phones count by brand in the sales
         prds_by_brand_typ_by_date = Sales.objects.values('product_stock_in__brand__brand_name', 'product_stock_in__brand__id', 'product_stock_in__brand__phone_type__id').annotate(sale_count=Count(
@@ -1922,7 +1917,7 @@ def get_sale_product_by_type_date(request):
             obj['count'] = s_count
 
             products_sales_by_brand = Sales.objects.filter(shop_id=shop_id, timestamp__range=[
-                                                         first_date_obj, second_date_obj], product_stock_in__brand__id=brand_id)
+                first_date_obj, second_date_obj], product_stock_in__brand__id=brand_id)
             size = len(products_sales_by_brand)
 
             total_price_type = 0
@@ -1951,11 +1946,11 @@ def get_sale_product_by_type_date(request):
             obj['model_name'] = product['product_stock_in__phone_model__model_name']
             obj['brand_id'] = product['product_stock_in__phone_model__brand__id']
             obj['type_id'] = product['product_stock_in__phone_model__phone_type__id']
-            
+
             obj['count'] = s_count
 
             products_sales_by_model = Sales.objects.filter(shop_id=shop_id, timestamp__range=[
-                                                         first_date_obj, second_date_obj], product_stock_in__phone_model__id=model_id)
+                first_date_obj, second_date_obj], product_stock_in__phone_model__id=model_id)
             size = len(products_sales_by_model)
 
             total_price_type = 0
@@ -1991,17 +1986,17 @@ def get_sale_product_by_model_date(request):
         second_date_obj = datetime.strptime(second_date_str, '%m/%d/%Y')
 
         # phones count by phone type in the sales
-        prds_by_model_typ_by_date = Sales.objects.filter(shop_id=shop_id, timestamp__range=[first_date_obj, second_date_obj], product_stock_in__phone_model__id=model_id)
+        prds_by_model_typ_by_date = Sales.objects.filter(shop_id=shop_id, timestamp__range=[
+                                                         first_date_obj, second_date_obj], product_stock_in__phone_model__id=model_id)
 
         for product in prds_by_model_typ_by_date:
             obj = {}
-            
+            obj['imei'] = product.product_stock_in.imei_no
             obj['brand_name'] = product.product_stock_in.brand.brand_name
             obj['model_name'] = product.product_stock_in.phone_model.model_name
             obj['initial_selling_price'] = product.product_stock_in.selling_price
             obj['actual_selling_price'] = product.actual_selling_price
 
-            
             product_solid.append(obj)
 
         data['product_solid'] = product_solid
